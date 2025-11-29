@@ -1,25 +1,26 @@
 {
   "format": 1,
   "restore": {
-    "/Users/furkanozkan/RiderProjects/YemekPal.API/Payona.API/Payona.API.csproj": {}
+    "/Users/tugberkacabey/Desktop/Payona-backend/Payona.API.csproj": {}
   },
   "projects": {
-    "/Users/furkanozkan/RiderProjects/YemekPal.API/Payona.API/Payona.API.csproj": {
+    "/Users/tugberkacabey/Desktop/Payona-backend/Payona.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/furkanozkan/RiderProjects/YemekPal.API/Payona.API/Payona.API.csproj",
+        "projectUniqueName": "/Users/tugberkacabey/Desktop/Payona-backend/Payona.API.csproj",
         "projectName": "Payona.API",
-        "projectPath": "/Users/furkanozkan/RiderProjects/YemekPal.API/Payona.API/Payona.API.csproj",
-        "packagesPath": "/Users/furkanozkan/.nuget/packages/",
-        "outputPath": "/Users/furkanozkan/RiderProjects/YemekPal.API/Payona.API/obj/",
+        "projectPath": "/Users/tugberkacabey/Desktop/Payona-backend/Payona.API.csproj",
+        "packagesPath": "/Users/tugberkacabey/.nuget/packages/",
+        "outputPath": "/Users/tugberkacabey/Desktop/Payona-backend/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/furkanozkan/.nuget/NuGet/NuGet.Config"
+          "/Users/tugberkacabey/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
+          "/usr/local/share/dotnet/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -32,7 +33,13 @@
           "warnAsError": [
             "NU1605"
           ]
-        }
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
@@ -82,6 +89,20 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[8.0.20, 8.0.20]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Host.osx-arm64",
+              "version": "[8.0.20, 8.0.20]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[8.0.20, 8.0.20]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.AspNetCore.App": {
               "privateAssets": "none"
@@ -90,7 +111,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/opt/homebrew/Cellar/dotnet@8/8.0.120/libexec/sdk/8.0.120/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.305/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

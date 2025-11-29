@@ -1,0 +1,298 @@
+@page
+@model ProfileModel
+@{
+    ViewData["Title"] = "Profil - Payona";
+}
+
+<div style="max-width: 800px; margin: 0 auto;">
+    <h1 style="margin-bottom: 2rem;">Profil Ayarları</h1>
+
+    <!-- Personal Information -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2 class="card-title">Kişisel Bilgiler</h2>
+        </div>
+        <form id="profileForm">
+            <div class="form-group">
+                <label class="form-label" for="profileName">Ad</label>
+                <input type="text" id="profileName" class="form-input" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="profileSurname">Soyad</label>
+                <input type="text" id="profileSurname" class="form-input" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="profileEmail">E-posta</label>
+                <input type="email" id="profileEmail" class="form-input" required />
+            </div>
+            <div id="profileError" class="text-error hidden mb-2"></div>
+            <button type="submit" class="btn btn-primary">Profili Güncelle</button>
+        </form>
+    </div>
+
+    <!-- Dormitory Information -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2 class="card-title">Yurt Bilgileri</h2>
+        </div>
+        <form id="dormForm">
+            <div class="form-group">
+                <label class="form-label" for="profileGender">Cinsiyet</label>
+                <select id="profileGender" class="form-select" required>
+                    <option value="">Cinsiyet Seçiniz</option>
+                    <option value="Male">Erkek</option>
+                    <option value="Female">Kadın</option>
+                    <option value="Other">Diğer</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="profileCity">Şehir</label>
+                <select id="profileCity" class="form-select" required>
+                    <option value="">Şehir Seçiniz</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="profileDorm">Yurt</label>
+                <select id="profileDorm" class="form-select" required>
+                    <option value="">Önce cinsiyet ve şehir seçiniz</option>
+                </select>
+            </div>
+            <div id="dormError" class="text-error hidden mb-2"></div>
+            <button type="submit" class="btn btn-primary">Yurt Bilgisini Güncelle</button>
+        </form>
+    </div>
+
+    <!-- Change Password -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2 class="card-title">Şifre Değiştir</h2>
+        </div>
+        <form id="passwordForm">
+            <div class="form-group">
+                <label class="form-label" for="oldPassword">Mevcut Şifre</label>
+                <input type="password" id="oldPassword" class="form-input" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="newPassword">Yeni Şifre</label>
+                <input type="password" id="newPassword" class="form-input" required minlength="6" />
+            </div>
+            <div id="passwordError" class="text-error hidden mb-2"></div>
+            <button type="submit" class="btn btn-primary">Şifreyi Değiştir</button>
+        </form>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="card" style="border: 2px solid var(--accent-danger);">
+        <div class="card-header">
+            <h2 class="card-title" style="color: var(--accent-danger);">Tehlikeli Bölge</h2>
+        </div>
+        <p style="margin-bottom: 1rem; color: var(--text-secondary);">
+            Hesabınızı silmek, tüm verilerinizi kalıcı olarak kaldıracaktır. Bu işlem geri alınamaz.
+        </p>
+        <button class="btn btn-danger" onclick="openDeleteModal()">Hesabı Sil</button>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div id="deleteModal" class="modal-overlay hidden">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Hesabı Sil</h2>
+            <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+        </div>
+        <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">
+            Hesap silme işlemini onaylamak için lütfen şifrenizi giriniz.
+        </p>
+        <form id="deleteForm">
+            <div class="form-group">
+                <label class="form-label" for="deletePassword">Şifre</label>
+                <input type="password" id="deletePassword" class="form-input" required />
+            </div>
+            <div id="deleteError" class="text-error hidden mb-2"></div>
+            <div class="flex gap-2">
+                <button type="submit" class="btn btn-danger" style="flex: 1;">Hesabı Sil</button>
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">İptal</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="module">
+        import { authService } from '/js/modules/auth.js';
+        import { loadDormData, getCities, getDormsForCity } from '/js/modules/dormData.js';
+
+        // Check authentication
+        if (!authService.isAuthenticated()) {
+            window.location.href = '/';
+        }
+
+        const user = authService.getCurrentUser();
+        if (!user) {
+            window.location.href = '/';
+        }
+
+        // Load dorm data and populate cities
+        let dormData = null;
+        const citySelect = document.getElementById('profileCity');
+        const dormSelect = document.getElementById('profileDorm');
+        const genderSelect = document.getElementById('profileGender');
+
+        async function initDormData() {
+            dormData = await loadDormData();
+            const cities = getCities();
+            
+            cities.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city;
+                option.textContent = city;
+                citySelect.appendChild(option);
+            });
+
+            // Populate forms
+            document.getElementById('profileName').value = user.name || '';
+            document.getElementById('profileSurname').value = user.surname || '';
+            document.getElementById('profileEmail').value = user.email || '';
+            
+            if (user.gender) {
+                genderSelect.value = user.gender;
+                updateDormOptions();
+            }
+            if (user.city) {
+                citySelect.value = user.city;
+                updateDormOptions();
+            }
+            if (user.dorm) {
+                dormSelect.value = user.dorm;
+            }
+        }
+
+        function updateDormOptions() {
+            const gender = genderSelect.value;
+            const city = citySelect.value;
+            
+            dormSelect.innerHTML = '<option value="">Yurt Seçiniz</option>';
+            
+            if (gender && city && dormData) {
+                const dorms = getDormsForCity(city, gender);
+                dorms.forEach(dorm => {
+                    const option = document.createElement('option');
+                    option.value = dorm;
+                    option.textContent = dorm;
+                    if (user.dorm === dorm) {
+                        option.selected = true;
+                    }
+                    dormSelect.appendChild(option);
+                });
+            }
+        }
+
+        genderSelect.addEventListener('change', updateDormOptions);
+        citySelect.addEventListener('change', updateDormOptions);
+
+        initDormData();
+
+        // Update profile
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errorDiv = document.getElementById('profileError');
+            errorDiv.classList.add('hidden');
+
+            const name = document.getElementById('profileName').value;
+            const surname = document.getElementById('profileSurname').value;
+            const email = document.getElementById('profileEmail').value;
+
+            try {
+                const response = await authService.updateProfile(name, surname, email);
+                alert('Profil başarıyla güncellendi!');
+                // Reload to get updated user data
+                window.location.reload();
+            } catch (error) {
+                errorDiv.textContent = error.message || 'Profil güncellenemedi';
+                errorDiv.classList.remove('hidden');
+            }
+        });
+
+        // Update dorm info
+        document.getElementById('dormForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errorDiv = document.getElementById('dormError');
+            errorDiv.classList.add('hidden');
+
+            const gender = document.getElementById('profileGender').value;
+            const city = document.getElementById('profileCity').value;
+            const dorm = document.getElementById('profileDorm').value;
+
+            try {
+                await authService.updateDormInfo(user.id, gender, city, dorm);
+                alert('Yurt bilgisi başarıyla güncellendi!');
+                // Update user in storage
+                const updatedUser = { ...user, gender, city, dorm };
+                sessionStorage.setItem('user', JSON.stringify(updatedUser));
+                window.location.reload();
+            } catch (error) {
+                errorDiv.textContent = error.message || 'Yurt bilgisi güncellenemedi';
+                errorDiv.classList.remove('hidden');
+            }
+        });
+
+        // Change password
+        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errorDiv = document.getElementById('passwordError');
+            errorDiv.classList.add('hidden');
+
+            const oldPassword = document.getElementById('oldPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+
+            try {
+                await authService.changePassword(oldPassword, newPassword);
+                alert('Şifre başarıyla değiştirildi!');
+                document.getElementById('passwordForm').reset();
+            } catch (error) {
+                errorDiv.textContent = error.message || 'Şifre değiştirilemedi';
+                errorDiv.classList.remove('hidden');
+            }
+        });
+
+        // Delete account
+        function openDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('hidden');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+            document.getElementById('deleteForm').reset();
+            document.getElementById('deleteError').classList.add('hidden');
+        }
+
+        document.getElementById('deleteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errorDiv = document.getElementById('deleteError');
+            errorDiv.classList.add('hidden');
+
+            const password = document.getElementById('deletePassword').value;
+
+            if (!confirm('Hesabınızı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
+                return;
+            }
+
+            try {
+                await authService.deleteAccount(user.id, password);
+                alert('Hesap başarıyla silindi');
+                await authService.logout();
+            } catch (error) {
+                errorDiv.textContent = error.message || 'Hesap silinemedi';
+                errorDiv.classList.remove('hidden');
+            }
+        });
+
+        // Close modal on overlay click
+        document.getElementById('deleteModal').addEventListener('click', (e) => {
+            if (e.target.id === 'deleteModal') {
+                closeDeleteModal();
+            }
+        });
+    </script>
+}
+

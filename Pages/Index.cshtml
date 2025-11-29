@@ -1,0 +1,194 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Giriş - Payona";
+}
+
+<div style="max-width: 400px; margin: 4rem auto;">
+    <div class="card">
+        <div class="card-header text-center">
+            <h1 class="card-title">Payona'ya Hoş Geldiniz</h1>
+            <p style="color: var(--text-secondary);">Öğrenci Yemek Paylaşım Platformu</p>
+        </div>
+
+        <div id="loginForm">
+            <h2 style="margin-bottom: 1.5rem;">Giriş Yap</h2>
+            <form id="loginFormElement">
+                <div class="form-group">
+                    <label class="form-label" for="loginEmail">E-posta</label>
+                    <input type="email" id="loginEmail" class="form-input" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="loginPassword">Şifre</label>
+                    <input type="password" id="loginPassword" class="form-input" required />
+                </div>
+                <div id="loginError" class="text-error hidden mb-2"></div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Giriş Yap</button>
+            </form>
+            <p class="text-center mt-2">
+                Hesabınız yok mu? 
+                <a href="#" id="showRegisterLink" style="color: var(--accent-primary); cursor: pointer;">Kayıt Ol</a>
+            </p>
+        </div>
+
+        <div id="registerForm" class="hidden">
+            <h2 style="margin-bottom: 1.5rem;">Kayıt Ol</h2>
+            <form id="registerFormElement">
+                <div class="form-group">
+                    <label class="form-label" for="registerName">Ad</label>
+                    <input type="text" id="registerName" class="form-input" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="registerSurname">Soyad</label>
+                    <input type="text" id="registerSurname" class="form-input" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="registerEmail">E-posta</label>
+                    <input type="email" id="registerEmail" class="form-input" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="registerPassword">Şifre</label>
+                    <input type="password" id="registerPassword" class="form-input" required minlength="6" placeholder="En az 6 karakter" />
+                    <small style="color: var(--text-secondary); font-size: 0.875rem; display: block; margin-top: 0.25rem;">
+                        Şifre en az 6 karakter olmalıdır
+                    </small>
+                </div>
+                <div id="registerError" class="text-error hidden mb-2"></div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Kayıt Ol</button>
+            </form>
+            <p class="text-center mt-2">
+                Zaten hesabınız var mı? 
+                <a href="#" id="showLoginLink" style="color: var(--accent-primary); cursor: pointer;">Giriş Yap</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="module">
+        import { authService } from '/js/modules/auth.js';
+        import { apiClient } from '/js/modules/api.js';
+
+        // Check if already authenticated
+        if (authService.isAuthenticated()) {
+            const user = authService.getCurrentUser();
+            if (authService.requiresDormInfo()) {
+                window.location.href = '/DormInfo';
+            } else {
+                window.location.href = '/Dashboard';
+            }
+        }
+
+        // Show/Hide form handlers
+        function showRegister() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+        }
+
+        function showLogin() {
+            document.getElementById('registerForm').classList.add('hidden');
+            document.getElementById('loginForm').classList.remove('hidden');
+        }
+
+        // Add event listeners for show/hide links
+        document.getElementById('showRegisterLink')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            showRegister();
+        });
+
+        document.getElementById('showLoginLink')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            showLogin();
+        });
+
+        // Login handler
+        document.getElementById('loginFormElement').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.classList.add('hidden');
+            errorDiv.textContent = '';
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await authService.login(email, password);
+                const user = response.user;
+
+                if (authService.requiresDormInfo()) {
+                    window.location.href = '/DormInfo';
+                } else {
+                    window.location.href = '/Dashboard';
+                }
+            } catch (error) {
+                errorDiv.textContent = error.message || 'Giriş başarısız';
+                errorDiv.classList.remove('hidden');
+            }
+        });
+
+        // Register handler
+        document.getElementById('registerFormElement').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errorDiv = document.getElementById('registerError');
+            errorDiv.classList.add('hidden');
+            errorDiv.textContent = '';
+
+            const name = document.getElementById('registerName').value.trim();
+            const surname = document.getElementById('registerSurname').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+
+            // Client-side validation
+            if (!name || !surname || !email || !password) {
+                errorDiv.textContent = 'Lütfen tüm alanları doldurun';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            if (password.length < 6) {
+                errorDiv.textContent = 'Şifre en az 6 karakter olmalıdır';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            // Email validation is handled by HTML5 pattern attribute and backend
+            // No need for client-side regex to avoid Razor syntax conflicts
+
+            try {
+                const response = await authService.register(email, password, name, surname);
+                // authService.register already saves token and user
+                // Check if registration was successful
+                if (response.token || response.Token) {
+                    // Redirect to dorm info page
+                    window.location.href = '/DormInfo';
+                } else {
+                    throw new Error('Kayıt başarılı ancak token alınamadı');
+                }
+            } catch (error) {
+                // Show user-friendly error messages
+                let errorMessage = error.message || 'Kayıt işlemi başarısız oldu';
+                
+                // Log the actual error for debugging
+                console.error('Registration error:', error);
+                
+                // Translate common error messages
+                if (errorMessage.includes('did not match the expected pattern') || 
+                    errorMessage.includes('EmailAddress') ||
+                    (errorMessage.includes('email') && errorMessage.includes('format'))) {
+                    // Email format validation error - show backend message
+                    errorMessage = 'Geçerli bir e-posta adresi giriniz';
+                } else if (errorMessage.includes('already in use') || errorMessage.includes('zaten kullanımda')) {
+                    errorMessage = 'Bu e-posta adresi zaten kullanılıyor';
+                } else if (errorMessage.includes('required') || errorMessage.includes('gerekli')) {
+                    errorMessage = 'Lütfen tüm alanları doldurun';
+                } else if (errorMessage.includes('length') || errorMessage.includes('karakter')) {
+                    errorMessage = 'Şifre en az 6 karakter olmalıdır';
+                }
+                
+                errorDiv.textContent = errorMessage;
+                errorDiv.classList.remove('hidden');
+            }
+        });
+    </script>
+}
+

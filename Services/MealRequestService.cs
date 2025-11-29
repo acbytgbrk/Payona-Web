@@ -34,13 +34,15 @@ public class MealRequestService
         await _context.SaveChangesAsync();
 
         await _context.Entry(mealRequest).Reference(m => m.User).LoadAsync();
+        await _context.Entry(mealRequest.User).Reference(u => u.DormInfo).LoadAsync();
 
         return new MealRequestDto
         {
             Id = mealRequest.Id,
             UserId = mealRequest.UserId,
             UserName = mealRequest.User.Name + " " + mealRequest.User.Surname.Substring(0, 1) + ".",
-            UserGender = mealRequest.User.DormInfo.Gender,
+            UserGender = mealRequest.User.DormInfo?.Gender,
+            UserDorm = mealRequest.User.DormInfo?.Dorm,
             MealType = mealRequest.MealType,
             PreferredDate = mealRequest.PreferredDate,
             PreferredStartTime = mealRequest.PreferredStartTime,
@@ -55,6 +57,7 @@ public class MealRequestService
     {
         var query = _context.MealRequests
             .Include(m => m.User)
+                .ThenInclude(u => u.DormInfo)
             .Where(m => m.Status == "active");
 
         if (!string.IsNullOrEmpty(mealType))
@@ -71,7 +74,8 @@ public class MealRequestService
             Id = m.Id,
             UserId = m.UserId,
             UserName = m.User.Name + " " + m.User.Surname.Substring(0, 1) + ".",
-            UserGender = m.User.DormInfo.Gender,
+            UserGender = m.User.DormInfo?.Gender,
+            UserDorm = m.User.DormInfo?.Dorm,
             MealType = m.MealType,
             PreferredDate = m.PreferredDate,
             PreferredStartTime = m.PreferredStartTime,
@@ -86,6 +90,7 @@ public class MealRequestService
     {
         var requests = await _context.MealRequests
             .Include(m => m.User)
+                .ThenInclude(u => u.DormInfo)
             .Where(m => m.UserId == userId)
             .OrderByDescending(m => m.CreatedAt)
             .ToListAsync();
@@ -95,7 +100,8 @@ public class MealRequestService
             Id = m.Id,
             UserId = m.UserId,
             UserName = m.User.Name + " " + m.User.Surname,
-            UserGender = m.User.DormInfo.Gender,
+            UserGender = m.User.DormInfo?.Gender,
+            UserDorm = m.User.DormInfo?.Dorm,
             MealType = m.MealType,
             PreferredDate = m.PreferredDate,
             PreferredStartTime = m.PreferredStartTime,

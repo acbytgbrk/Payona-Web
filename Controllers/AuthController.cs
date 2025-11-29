@@ -21,6 +21,16 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .SelectMany(x => x.Value!.Errors.Select(e => e.ErrorMessage))
+                .ToList();
+            
+            return BadRequest(new { message = string.Join(" ", errors) });
+        }
+
         var result = await _authService.RegisterAsync(request);
         if (result == null)
         {
@@ -44,6 +54,16 @@ public class AuthController : ControllerBase
     [Authorize]
     public async Task<IActionResult> UpsertDormInfo(Guid id, [FromBody] DormInfoRequest dto)
     {
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .SelectMany(x => x.Value!.Errors.Select(e => e.ErrorMessage))
+                .ToList();
+            
+            return BadRequest(new { message = string.Join(" ", errors) });
+        }
+
         var result = await _authService.DormInfo(id, dto);
         if (!result.Success)
             return BadRequest(new { message = result.Message });

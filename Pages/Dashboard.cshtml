@@ -1,0 +1,304 @@
+@page
+@model DashboardModel
+@{
+    ViewData["Title"] = "Ana Sayfa - Payona";
+}
+
+<div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h1>Ana Sayfa</h1>
+        <div class="flex gap-2">
+            <button class="btn btn-primary" onclick="openCreateModal('give')">Verme Talebi Oluştur</button>
+            <button class="btn btn-secondary" onclick="openCreateModal('take')">Alma Talebi Oluştur</button>
+        </div>
+    </div>
+
+    <!-- Canvas Visualization -->
+    <div class="card mb-4">
+        <h2 class="card-title mb-2">Aktivite Özeti</h2>
+        <canvas id="activityCanvas" width="800" height="200" style="width: 100%; max-width: 800px; height: 200px; border-radius: 0.5rem; background: var(--bg-secondary);"></canvas>
+    </div>
+
+    <!-- My Requests Section -->
+    <section class="mb-4">
+        <h2 style="margin-bottom: 1rem;">Taleplerim</h2>
+        <div id="myRequests" class="grid grid-cols-1 gap-4">
+            <div class="text-center" style="padding: 2rem; color: var(--text-secondary);">
+                <div class="spinner" style="margin: 0 auto;"></div>
+                <p class="mt-2">Yükleniyor...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Other Students' Requests Section -->
+    <section>
+        <h2 style="margin-bottom: 1rem;">Diğer Öğrencilerin Talepleri</h2>
+        <div id="otherRequests" class="grid grid-cols-1 gap-4">
+            <div class="text-center" style="padding: 2rem; color: var(--text-secondary);">
+                <div class="spinner" style="margin: 0 auto;"></div>
+                <p class="mt-2">Yükleniyor...</p>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Create Request Modal -->
+<div id="createModal" class="modal-overlay hidden">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 id="modalTitle">Talep Oluştur</h2>
+            <button class="modal-close" onclick="closeCreateModal()">&times;</button>
+        </div>
+        <form id="createRequestForm">
+            <input type="hidden" id="requestType" />
+            <div class="form-group">
+                <label class="form-label" for="preferredDate">Tercih Edilen Tarih (İsteğe Bağlı)</label>
+                <input type="date" id="preferredDate" class="form-input" />
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="preferredStartTime">Başlangıç Saati (İsteğe Bağlı)</label>
+                <input type="time" id="preferredStartTime" class="form-input" />
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="preferredEndTime">Bitiş Saati (İsteğe Bağlı)</label>
+                <input type="time" id="preferredEndTime" class="form-input" />
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="notes">Notlar (İsteğe Bağlı)</label>
+                <textarea id="notes" class="form-textarea" placeholder="Ek bilgiler..."></textarea>
+            </div>
+            <div id="createError" class="text-error hidden mb-2"></div>
+            <div class="flex gap-2">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Oluştur</button>
+                <button type="button" class="btn btn-secondary" onclick="closeCreateModal()">İptal</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="module">
+        import { authService } from '/js/modules/auth.js';
+        import { mealRequestService } from '/js/modules/mealRequest.js';
+
+        // Check authentication
+        if (!authService.isAuthenticated()) {
+            window.location.href = '/';
+        }
+
+        const user = authService.getCurrentUser();
+        if (authService.requiresDormInfo()) {
+            window.location.href = '/DormInfo';
+        }
+
+        // Initialize Canvas
+        function initCanvas() {
+            const canvas = document.getElementById('activityCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas size
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 200;
+
+            // Draw activity chart
+            function drawChart() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                const padding = 40;
+                const chartWidth = canvas.width - padding * 2;
+                const chartHeight = canvas.height - padding * 2;
+                
+                // Draw grid
+                ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-color');
+                ctx.lineWidth = 1;
+                
+                // Horizontal lines
+                for (let i = 0; i <= 5; i++) {
+                    const y = padding + (chartHeight / 5) * i;
+                    ctx.beginPath();
+                    ctx.moveTo(padding, y);
+                    ctx.lineTo(canvas.width - padding, y);
+                    ctx.stroke();
+                }
+                
+                // Vertical lines
+                for (let i = 0; i <= 7; i++) {
+                    const x = padding + (chartWidth / 7) * i;
+                    ctx.beginPath();
+                    ctx.moveTo(x, padding);
+                    ctx.lineTo(x, canvas.height - padding);
+                    ctx.stroke();
+                }
+                
+                // Draw sample data (simulated activity)
+                const data = [12, 19, 15, 25, 22, 18, 20];
+                const maxValue = Math.max(...data);
+                const barWidth = chartWidth / 7 - 10;
+                
+                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent-primary');
+                
+                data.forEach((value, index) => {
+                    const barHeight = (value / maxValue) * chartHeight;
+                    const x = padding + (chartWidth / 7) * index + 5;
+                    const y = canvas.height - padding - barHeight;
+                    
+                    ctx.fillRect(x, y, barWidth, barHeight);
+                    
+                    // Add animation
+                    ctx.save();
+                    ctx.globalAlpha = 0.8;
+                    ctx.fillRect(x, y, barWidth, barHeight);
+                    ctx.restore();
+                });
+                
+                // Draw labels
+                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary');
+                ctx.font = '12px sans-serif';
+                ctx.textAlign = 'center';
+                const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                days.forEach((day, index) => {
+                    const x = padding + (chartWidth / 7) * index + chartWidth / 14;
+                    ctx.fillText(day, x, canvas.height - 10);
+                });
+            }
+            
+            drawChart();
+            
+            // Redraw on resize
+            window.addEventListener('resize', () => {
+                canvas.width = canvas.offsetWidth;
+                drawChart();
+            });
+        }
+
+        initCanvas();
+
+        // Load requests
+        async function loadRequests() {
+            try {
+                const [myRequests, allRequests] = await Promise.all([
+                    mealRequestService.getMy(),
+                    mealRequestService.getAll()
+                ]);
+
+                const user = authService.getCurrentUser();
+                const otherRequests = allRequests.filter(req => 
+                    req.userId !== user.id && 
+                    req.userDorm === user.dorm
+                );
+
+                renderRequests('myRequests', myRequests, true);
+                renderRequests('otherRequests', otherRequests, false);
+            } catch (error) {
+                console.error('Error loading requests:', error);
+                document.getElementById('myRequests').innerHTML = 
+                    '<p class="text-error">Talepler yüklenemedi</p>';
+                document.getElementById('otherRequests').innerHTML = 
+                    '<p class="text-error">Talepler yüklenemedi</p>';
+            }
+        }
+
+        function renderRequests(containerId, requests, isOwn) {
+            const container = document.getElementById(containerId);
+            
+            if (!requests || requests.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-secondary);">Talep bulunamadı</p>';
+                return;
+            }
+
+            container.innerHTML = requests.map(request => {
+                const mealType = (request.mealType || '').toLowerCase();
+                const isGive = mealType === 'give' || mealType === 'lunch';
+                return `
+                <div class="card request-card" onclick="openChat('${request.userId}', '${request.userName}')">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="request-type ${isGive ? 'give' : 'take'}">
+                            ${isGive ? '🍽️ Verme' : '🍴 Alma'}
+                        </span>
+                        <span class="badge badge-primary">${request.status}</span>
+                    </div>
+                    <p><strong>${request.userName}</strong> ${request.userGender ? `(${request.userGender})` : ''}</p>
+                    ${request.preferredDate ? `<p style="color: var(--text-secondary); font-size: 0.9rem;">Tarih: ${new Date(request.preferredDate).toLocaleDateString('tr-TR')}</p>` : ''}
+                    ${request.preferredStartTime && request.preferredEndTime ? 
+                        `<p style="color: var(--text-secondary); font-size: 0.9rem;">Saat: ${request.preferredStartTime} - ${request.preferredEndTime}</p>` : ''}
+                    ${request.notes ? `<p style="margin-top: 0.5rem;">${request.notes}</p>` : ''}
+                    <p style="color: var(--text-tertiary); font-size: 0.85rem; margin-top: 0.5rem;">
+                        ${new Date(request.createdAt).toLocaleString('tr-TR')}
+                    </p>
+                    ${isOwn ? `<button class="btn btn-danger btn-sm mt-2" onclick="event.stopPropagation(); deleteRequest('${request.id}')">Sil</button>` : ''}
+                </div>
+            `;
+            }).join('');
+        }
+
+        function openCreateModal(type) {
+            document.getElementById('requestType').value = type;
+            document.getElementById('modalTitle').textContent = `${type === 'give' ? 'Verme' : 'Alma'} Talebi Oluştur`;
+            document.getElementById('createModal').classList.remove('hidden');
+        }
+
+        function closeCreateModal() {
+            document.getElementById('createModal').classList.add('hidden');
+            document.getElementById('createRequestForm').reset();
+            document.getElementById('createError').classList.add('hidden');
+        }
+
+        function openChat(userId, userName) {
+            window.location.href = `/Chat?userId=${userId}&userName=${encodeURIComponent(userName)}`;
+        }
+
+        async function deleteRequest(id) {
+            if (!confirm('Bu talebi silmek istediğinizden emin misiniz?')) return;
+            
+            try {
+                await mealRequestService.delete(id);
+                loadRequests();
+            } catch (error) {
+                alert('Talep silinemedi: ' + error.message);
+            }
+        }
+
+        // Create request handler
+        document.getElementById('createRequestForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errorDiv = document.getElementById('createError');
+            errorDiv.classList.add('hidden');
+
+            const mealType = document.getElementById('requestType').value;
+            const preferredDate = document.getElementById('preferredDate').value || null;
+            const preferredStartTime = document.getElementById('preferredStartTime').value || null;
+            const preferredEndTime = document.getElementById('preferredEndTime').value || null;
+            const notes = document.getElementById('notes').value || null;
+
+            try {
+                // Convert time format from HH:mm to HH:mm:ss for TimeSpan
+                const startTime = preferredStartTime ? `${preferredStartTime}:00` : null;
+                const endTime = preferredEndTime ? `${preferredEndTime}:00` : null;
+                
+                await mealRequestService.create(
+                    mealType,
+                    preferredDate,
+                    startTime,
+                    endTime,
+                    notes
+                );
+                closeCreateModal();
+                loadRequests();
+            } catch (error) {
+                errorDiv.textContent = error.message || 'Talep oluşturulamadı';
+                errorDiv.classList.remove('hidden');
+            }
+        });
+
+        // Close modal on overlay click
+        document.getElementById('createModal').addEventListener('click', (e) => {
+            if (e.target.id === 'createModal') {
+                closeCreateModal();
+            }
+        });
+
+        // Load initial data
+        loadRequests();
+    </script>
+}
+

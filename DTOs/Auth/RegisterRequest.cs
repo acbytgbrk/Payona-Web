@@ -5,7 +5,7 @@ namespace Payona.API.DTOs;
 public class RegisterRequest
 {
     [Required(ErrorMessage = "E-posta gerekli")]
-    [EmailAddress]
+    [EmailAddress(ErrorMessage = "Geçerli bir e-posta adresi giriniz")]
     public string Email { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Şifre gerekli")]

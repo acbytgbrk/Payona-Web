@@ -1,0 +1,1315 @@
+{
+    "Adana": {
+        "kiz": [
+            "Beş Ocak Kyk Kız Öğrenci Yurdu",
+            "Toroslar Kyk Kız Öğrenci Yurdu",
+            "Fevzi Çakmak Kyk Kız Öğrenci Yurdu",
+            "Mahmut Sami Ramazanoğlu Kyk Kız Öğrenci Yurdu",
+            "Ceyhan Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Kozan Kyk Kız Ve Erkek Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Çukurova Kyk Erkek Öğrenci Yurdu",
+            "Ceyhan Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Kozan Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Kutul Amare Kyk Erkek Öğrenci Yurdu",
+            "Adana Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Adıyaman": {
+        "kiz": [
+            "Besni Servi M.erdemoğlu Kyk Kız Ve Erkek Yurdu",
+            "Adıyaman Kyk Kız Öğrenci Yurdu",
+            "Safvan Bin Muattal Kyk Kız Öğrenci Yurdu",
+            "Kahta Kyk Kız Ve Erkek Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Besni Servi M.erdemoğlu Kyk Kız Ve Erkek Yurdu",
+            "Kahta Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Veysel Karani Kyk Erkek Öğrenci Yurdu",
+            "Yediyaman Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Afyon": {
+        "kiz": [
+            "Esma Sultan Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Şuhut Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Emirdağ  Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Dinar Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Bayat Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Bolvadin Kyk Kız Öğrenci Yurdu",
+            "Destine Hatun Kyk Kız Öğrenci Yurdu",
+            "Bacım Sultan Kyk Kız Öğrenci Yurdu",
+            "Çay Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Esma Sultan Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Şuhut Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Emirdağ  Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Dinar Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Bayat Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Kamil Miras Kyk Erkek Öğrenci Yurdu",
+            "Bolvadin Kyk Erkek Öğrenci Yurdu",
+            "Abdürrahim Mısri Kyk Erkek Öğrenci Yurdu",
+            "Sultan Divani Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Ağrı": {
+        "kiz": [
+            "Abdurrahim Arvasi Kyk Kız Öğrenci Yurdu",
+            "Ağrı Kyk Kız Öğrenci Yurdu",
+            "Ağrı Ahmedi Hani Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Ümmü Eyüp Kyk Erkek Öğrenci Yurdu",
+            "İshak Paşa Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Aksaray": {
+        "kiz": [
+            "Ortaköy Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Güzelyurt Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Alime Hatun Kyk Kız Öğrenci Yurdu",
+            "Mahperi Hatun Kyk Kız Öğrenci Yurdu",
+            "Aksaray Kyk Kız Öğrenci Yurdu",
+            "Aksaray Cemaleddin Aksarayi Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Ortaköy Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Güzelyurt Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Hamidi Veli Kyk Erkek Öğrenci Yurdu",
+            "Aksaray Kyk Erkek Öğrenci Yurdu",
+            "Sultan Mesud Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Amasya": {
+        "kiz": [
+            "Suluova Kyk Kız Öğrenci Yurdu",
+            "Amasya Yeşilırmak Kyk Kız Öğrenci Yurdu",
+            "Hüsnüşah Hatun Kyk Kız Öğrenci Yurdu",
+            "Merzifon Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Kara Mustafa Paşa Kyk Erkek Öğrenci Yurdu",
+            "Sultan Bayezid Kyk Erkek Öğrenci Yurdu",
+            "Amasya Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Ankara": {
+        "kiz": [
+            "Alev Alatlı KYK Kız Öğrenci Yurdu",
+            "Dışkapı KYK Kız Öğrenci Yurdu",
+            "Ayaş Kyk Öğrenci Yurdu",
+            "Beypazarı KYK Öğrenci Yurdu",
+            "Ankara Hacı Bayram Veli KYK Kız Öğrenci Yurdu",
+            "GSB Başkent Yurtları-1",
+            "Kızılcahamam KYK Kız Öğrenci Yurdu",
+            "Beşevler KYK Kız Öğrenci Yurdu",
+            "GSB Anadolu Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Ayaş Kyk Öğrenci Yurdu",
+            "Beypazarı KYK Öğrenci Yurdu",
+            "Osman Tan KYK Erkek Öğrenci Yurdu",
+            "GSB Başkent Yurtları-2",
+            "Mogan KYK Erkek Öğrenci Yurdu",
+            "Gölbaşı Eymir KYK Erkek Öğrenci Yurdu",
+            "Cebeci Kyk Erkek Öğrenci Yurdu",
+            "Şereflikoçhisar Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Taceddin Veli Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Antalya": {
+        "kiz": [
+            "Falez Kyk Kız Öğrenci Yurdu",
+            "Alanya Terken Hatun Kyk Kız Öğrenci Yurdu",
+            "Kumluca  Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Korkuteli Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Manavgat Kyk Kız Öğrenci Yurdu",
+            "Elmalılı Hamdi Yazır Öğrenci Yurdu",
+            "Alanya Alaaddin Keykubat Kız Yurdu",
+            "Bezm-i Alem Valide Sultan KYK Kız Öğrenci Yurdu",
+            "Serik KYK Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Damlataş Kyk Erkek Öğrenci Yurdu",
+            "Alanya Kyk Erkek Öğrenci Yurdu",
+            "Kumluca  Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Korkuteli Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Şehzade Korkut Kyk Erkek Öğrenci Yurdu",
+            "Muratpaşa Kyk Erkek Öğrenci Yurdu",
+            "Manavgat Şelale Kyk Erkek Öğrenci Yurdu",
+            "Ahmet Hamdi Akseki Kyk Erkek Öğrenci Yurdu",
+            "Serik KYK Öğrenci Yurdu"
+        ]
+    },
+    "Ardahan": {
+        "kiz": [
+            "Niyazi Mısri Kyk Kız Öğrenci Yurdu",
+            "Ardahan Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Kaşgarlı Mahmut Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Artvin": {
+        "kiz": [
+            "Hopa Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Hamdi Efendi Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Nedime Lütfiye Günal Kyk Kız Ve Erkek Yurdu",
+            "Şavşat Kyk Kız Öğrenci Yurdu",
+            "Şah Sultan Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Çoruh Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Hopa Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Hamdi Efendi Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Nedime Lütfiye Günal Kyk Kız Ve Erkek Yurdu",
+            "Şah Sultan Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Artvin Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Aydın": {
+        "kiz": [
+            "Adnan Menderes Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Efe Ayşe Kyk Kız ve Erkek Öğrenci Yurdu Müdürlüğü",
+            "Koçarlı Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Sultanhisar Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "İsabeyli Kyk Kız Öğrenci Yurdu (nazilli)",
+            "Gevherhan Sultan Kyk Kız Öğrenci Yurdu",
+            "Meryem Yazıcıoğlu Kyk Kız Öğrenci Yurdu",
+            "Yenipazar Kyk Kız Ve Erkek Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Adnan Menderes Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Efe Ayşe Kyk Kız ve Erkek Öğrenci Yurdu Müdürlüğü",
+            "Koçarlı Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Sultanhisar Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Hacı Mustafa Efendizade Kyk Erkek Öğrenci Yurdu",
+            "Nazilli Kyk Erkek Öğrenci Yurdu",
+            "Karacasu Kyk Erkek Öğrenci Yurdu Müdürlüğü",
+            "Yenipazar Kyk Kız Ve Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Balıkesir": {
+        "kiz": [
+            "Yarbay Vecihibey Kyk Kız Öğrenci Yurdu",
+            "Altıeylül Kyk Kız Öğrenci Yurdu",
+            "Burhaniye Kyk Kız Öğrenci Yurdu",
+            "Ayvalık Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Fatma Ana Kyk Kız Öğrenci Yurdu",
+            "Bandırma Kyk Kız Öğrenci Yurdu",
+            "Muhyiddini Rumi Kyk Erkek Öğrenci Yurdu",
+            "Gönenli Mehmet Efendi Kyk Kız Ve Erkek Yurdu",
+            "Dursunbey Kyk Kız Ve Erkek Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Zağnos Paşa Kyk Erkek Öğrenci Yurdu",
+            "Bandırma Kuş Cenneti Kyk Erkek Öğrenci Yurdu",
+            "Karesi Kyk Erkek Öğrenci Yurdu",
+            "Ayvalık Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Ayhan Songar Kyk Erkek Öğrenci Yurdu",
+            "Muhyiddini Rumi Kyk Erkek Öğrenci Yurdu",
+            "Gönenli Mehmet Efendi Kyk Kız Ve Erkek Yurdu",
+            "Dursunbey Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Hasan Basri Çantay Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Bartın": {
+        "kiz": [
+            "Hacı İbrahim Paşa Kyk Kız Öğrenci Yurdu",
+            "Bartın Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Bartın Çeşmi Cihan Kyk Kız Öğrenci Yurdu"
+        ]
+    },
+    "Batman": {
+        "kiz": [
+            "Batman Kyk Kız Öğrenci Yurdu",
+            "Süveybe Ana Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Seyyid Bilal Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Bayburt": {
+        "kiz": [
+            "Sultan Fahriye Kyk Kız Öğrenci Yurdu",
+            "Ağlarbaba Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Bayburt Kyk Erkek Öğrenci Yurdu",
+            "Dede Korkut Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Bilecik": {
+        "kiz": [
+            "Bilecik Halime Hatun Kyk Kız Öğrenci Yurdu",
+            "Bilecik Kyk Kız Öğrenci Yurdu",
+            "Pazaryeri Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Şeyh Edebalı Kyk Erkek Öğrenci Yurdu",
+            "Ertuğrulgazi Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Bingöl": {
+        "kiz": [
+            "Bingöl Kyk Kız Öğrenci Yurdu",
+            "Pir Ali Bey Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Bingöl Kyk Erkek Öğrenci Yurdu",
+            "Mürsel Paşa Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Bitlis": {
+        "kiz": [
+            "Adilcevaz Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Tatvan Kyk Kız Öğrenci Yurdu",
+            "Bitlis Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Adilcevaz Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Beşminare Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Bolu": {
+        "kiz": [
+            "Gerede Kyk Kız Öğrenci Yurdu",
+            "Mudurnu Hacı Mehmet Astarcı Kyk Kız ve Erkek Yurdu",
+            "Seben İzzet Baysal Myo Kız Ve Erkek Kyk Yurdu",
+            "Bolu Gölköy Kyk Kız Öğrenci Yurdu",
+            "Hayreddin Tokadi Kyk Kız Öğrenci Yurdu",
+            "Bolu İzzet Baysal Kyk Kız Öğrenci Yurdu",
+            "Seyyide Nefise Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Geredeli İshak Bey Kyk Erkek Öğrenci Yurdu",
+            "Mudurnu Hacı Mehmet Astarcı Kyk Kız ve Erkek Yurdu",
+            "Seben İzzet Baysal Myo Kız Ve Erkek Kyk Yurdu",
+            "Seyit Avşar Kyk Erkek Öğrenci Yurdu",
+            "Hattat Emin Barın Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Burdur": {
+        "kiz": [
+            "Bucak Kyk Kız Öğrenci Yurdu",
+            "Gölhisar Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Burdur Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Safahat Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Gölhisar Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Burdur Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Asımın Nesli Kyk Erkek Öğrenci Yurdu",
+            "Fereli Sinan Efendi Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Bursa": {
+        "kiz": [
+            "Ulu Şehir Kyk Kız Öğrenci Yurdu",
+            "Bursa Hüma Hatun Kyk Kız Öğrenci Yurdu",
+            "Gülruh Hatun Kyk Kız Öğrenci Yurdu",
+            "Halime Hatun Kyk Kız Öğrenci Yurdu",
+            "Uludağ Kyk Kız Öğrenci Yurdu",
+            "Şirin Hatun Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Süleyman Çelebi Öğrenci Yurdu"
+        ]
+    },
+    "Çanakkale": {
+        "kiz": [
+            "Biga Kyk Kız Öğrenci Yurdu",
+            "Gökçeada Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Safiye Hüseyin Kyk Kız Öğrenci Yurdu",
+            "Çanakkale Kyk Kız Öğrenci Yurdu",
+            "Terzioğlu Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Gökçeada Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Adile Sultan Kyk Erkek Öğrenci Yurdu",
+            "Ahmet Bican Kyk Erkek Öğrenci Yurdu",
+            "Kerime Sultan Kyk Erkek Öğrenci Yurdu",
+            "Nusrat Kyk Erkek Öğrenci Yurdu",
+            "Çan Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Çankırı": {
+        "kiz": [
+            "Çankırı Kyk Kız Öğrenci Yurdu",
+            "Sabiha Anne Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Hacı Murat Veli Kyk Erkek Öğrenci Yurdu",
+            "Emir Karatekin Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Çorum": {
+        "kiz": [
+            "Hitit Kyk Kız Öğrenci Yurdu",
+            "Sungurlu Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Osmancık Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "İskilipli Atıf Hoca Kyk Kız Öğrenci Yurdu",
+            "Hayrettin Karaman Kyk Kız Öğrenci Yurdu",
+            "İskilip Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Alaca Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Sungurlu Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Osmancık Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Kerebi Gazi Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Denizli": {
+        "kiz": [
+            "Tavas Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Buldan Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Honaz Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Bekilli Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Biruni Kyk Kız Öğrenci Yurdu",
+            "Pamukkale Kyk Kız Öğrenci Yurdu",
+            "Fatma Yıldız Hanım Kyk Kız Öğrenci Yurdu",
+            "İbni Rüşd Kyk Kız Öğrenci Yurdu",
+            "Çivril Kyk Kız Ve Erkek Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Tavas Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Buldan Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Honaz Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Bekilli Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Çivril Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Prof.Dr.Cevat Akşit Kyk Erkek Öğrenci Yurdu",
+            "İbni Haldun Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Diyarbakır": {
+        "kiz": [
+            "Süleyman Bin Halid Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Diyarbakır Selahattin Eyyubi Kyk Erkek Yurdu",
+            "Halid Bin Velid Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Düzce": {
+        "kiz": [
+            "Mahpeyker Sultan Kyk Kız Öğrenci Yurdu",
+            "Akçakoca Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Düzce Konuralp Kyk Kız Öğrenci Yurdu",
+            "Necla Pekolcay Kyk Kız Öğrenci Yurdu",
+            "Raziye Begüm Sultan Kyk Kız Öğrenci Yurdu",
+            "Zahidül Kevseri Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Akçakoca Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Cahit Zarifoğlu Kyk Erkek Öğrenci Yurdu",
+            "Düzce Avni Akyol Kyk Erkek Öğrenci Yurdu",
+            "Aliye İzzet Begoviç Kyk Erkek Öğrenci Yurdu",
+            "Hafız Hasan Şen Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Edirne": {
+        "kiz": [
+            "Meriç Kyk Kız Öğrenci Yurdu",
+            "İpsala Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Selimiye Kyk Kız Öğrenci Yurdu",
+            "Edirne Kyk Kız Öğrenci Yurdu",
+            "Sedefkar Mehmed Ağa Kyk Kız Öğrenci Yurdu",
+            "Gülşeni Kyk Kız Öğrenci Yurdu",
+            "Keşan Kyk Kız Öğrenci Yurdu",
+            "Uzunköprü Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Edirne Kyk Erkek Öğrenci Yurdu",
+            "İpsala Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Sultan Çelebi Mehmet Yurt Müdürlüğü",
+            "Gazi Evrenos Kyk Erkek Öğrenci Yurdu",
+            "Sultan II. Murat Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Elazığ": {
+        "kiz": [
+            "Sare Ana Kyk Kız Öğrenci Yurdu",
+            "Fethi Sekin Kyk Kız Öğrenci Yurdu",
+            "Harput Kyk Kız Öğrenci Yurdu",
+            "İzzetpaşa Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Elazığ Fırat Kyk Erkek Öğrenci Yurdu",
+            "Ahmet Kabaklı Kyk Erkek Öğrenci Yurdu",
+            "Ömer Bilginoğlu Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Erzincan": {
+        "kiz": [
+            "Çayırlı Davut Sulari Kyk Kız ve Erkek Yurdu",
+            "İliç Dursun Yıldırım Kyk Kız ve Erkek Yurdu",
+            "Üzümlü Ciminli Baba Kyk Kız ve Erkek Yurdu",
+            "Refahiye Sydv Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Kemah Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Kemaliye Osman Nuri Akın Kyk Kız Ve Erkek Yurdu",
+            "Tercan M.Refik Şimşek Kyk Kız Ve Erkek Yurdu",
+            "Terzibaba Kyk Kız Öğrenci Yurdu",
+            "Erzincan Mengücek Gazi Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Çayırlı Davut Sulari Kyk Kız ve Erkek Yurdu",
+            "İliç Dursun Yıldırım Kyk Kız ve Erkek Yurdu",
+            "Üzümlü Ciminli Baba Kyk Kız ve Erkek Yurdu",
+            "Refahiye Sydv Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Kemah Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Kemaliye Osman Nuri Akın Kyk Kız Ve Erkek Yurdu",
+            "Tercan M.Refik Şimşek Kyk Kız Ve Erkek Yurdu",
+            "Pir Muhammed Bahaeddin Kyk Erkek Öğrenci Yurdu",
+            "Piri Sami Kyk Erkek Öğrenci Yurdu Müdürlüğü"
+        ]
+    },
+    "Erzurum": {
+        "kiz": [
+            "Erzurum Kyk Kız Öğrenci Yurdu",
+            "Hınıs Kyk Kız Öğrenci Yurdu",
+            "Horasan Kyk Kız Öğrenci Yurdu Müdürlüğü",
+            "Oltu Kyk Kız Öğrenci Yurdu",
+            "Narman Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Erzurum Alvarlı Efe Kyk Kız Öğrenci Yurdu",
+            "Abdurrahmangazi Kyk Kız Öğrenci Yurdu",
+            "Erzurum Nenehatun Kyk Kız Öğrenci Yurdu",
+            "Kazım Karabekir Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Aşkale Kyk Erkek Öğrenci Yurdu",
+            "Aziziye Kyk Erkek Öğrenci Yurdu",
+            "Oğuzhan Yaşar Kyk Erkek Öğrenci Yurdu Müdürlüğü",
+            "Nurettin Topçu Kyk Erkek Öğrenci Yurdu",
+            "Narman Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Erzurum İbrahim Hakkı Kyk Erkek Öğrenci Yurdu",
+            "Pasinler Kyk Kız Ve Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Eskişehir": {
+        "kiz": [
+            "Hızır Bey Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Cumhuriyet Kyk Kız Öğrenci Yurdu",
+            "Mükrime Hatun Kyk Kız Öğrenci Yurdu",
+            "Eskişehir Kyk Kız Öğrenci Yurdu",
+            "Bala Hatun Kyk Kız Öğrenci Yurdu",
+            "Taptuk Emre Kyk Kız Öğrenci Yurdu",
+            "Sivrihisar Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Yunus Emre Kyk Kız Öğrenci Yurdu (Eskişehir)"
+        ],
+        "erkek": [
+            "Hızır Bey Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Doğan Aslan Bey Kyk Erkek Öğrenci Yurdu",
+            "Gündüzalp Kyk Erkek Öğrenci Yurdu",
+            "Osman Efendi Kyk Erkek Öğrenci Yurdu",
+            "Sivrihisar Kyk Kız ve Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Gaziantep": {
+        "kiz": [
+            "Gazikent Kyk Kız Öğrenci Yurdu",
+            "Abdülkadir Güllüoğlu Kyk Kız ve Erkek Yurdu",
+            "Ezogelin Kyk Kız Öğrenci Yurdu",
+            "Nizip Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Oğuzeli Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Şahinbey Kyk Kız Öğrenci Yurdu",
+            "Ukkaşe Kyk Kız Ve Erkek Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Abdülkadir Güllüoğlu Kyk Kız ve Erkek Yurdu",
+            "Ümmü Gülsüm Kyk Erkek Öğrenci Yurdu",
+            "Nizip Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Oğuzeli Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Ukkaşe Kyk Kız Ve Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Giresun": {
+        "kiz": [
+            "Tirebolu Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Aziz Hüseyin Gökçe Kyk Kız Öğrenci Yurdu",
+            "Alucra Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Şebinkarahisar Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Eynesil Kyk Kız Öğrenci Yurdu",
+            "Esma Serhat Hatun Kyk Kız Öğrenci Yurdu",
+            "Giresun Sahil Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Giresun Kyk Kız ve Erkek Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Tirebolu Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Alucra Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Şebinkarahisar Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Giresun Sahil Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Seyyid Vakkas Kyk Erkek Öğrenci Yurdu",
+            "Giresun Kyk Kız ve Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Gümüşhane": {
+        "kiz": [
+            "Osman Nuri Efendi Kyk Kız Öğrenci Yurdu",
+            "Mustafa Gül Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Hacı Şaban Cengiz Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Zeynep Ana Kyk Kız Öğrenci Yurdu",
+            "Gümüşhane Halit Zarbun Kyk Kız Öğrenci Yurdu",
+            "Gümüşhane Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Mustafa Gül Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Hacı Şaban Cengiz Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Ahmet Ziyaüddin Gümüşhanevi Kyk Erkek Yurdu"
+        ]
+    },
+    "Hakkari": {
+        "kiz": [
+            "Afife Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Hakkari Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Hatay": {
+        "kiz": [
+            "Gaziye Hatun Kyk Kız Öğrenci Yurdu",
+            "Tayfur Sökmen Kyk Kız Öğrenci Yurdu",
+            "Antakya Kyk Kız Öğrenci Yurdu",
+            "Yayladağı Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "İskenderun Kyk Erkek Öğrenci Yurdu",
+            "Muhyiddin İbni Arabi Kyk Erkek Öğrenci Yurdu",
+            "Cemil Meriç Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Iğdır": {
+        "kiz": [
+            "Süreyya Sülün Hanım Kyk Kız ve Erkek Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Süreyya Sülün Hanım Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Selman I Farisi Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Isparta": {
+        "kiz": [
+            "Eğirdir Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Gülkent Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Atabey Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Şarkikaraağaç Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Gülcihan Kyk Kız Öğrenci Yurdu",
+            "Bediüzzaman Said Nursi Kyk Kız Öğrenci Yurdu",
+            "Mihri Hatun Kyk Kız Öğrenci Yurdu",
+            "Gülistan Kyk Kız Öğrenci Yurdu",
+            "Yalvaç Kyk Kız Ve Erkek Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Eğirdir Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Gülkent Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Atabey Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Şarkikaraağaç Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Isparta Murat Hüdavendigar Kyk Erkek Öğrenci Yurdu",
+            "Yalvaç Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Kutlubey Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Isparta Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "İstanbul": {
+        "kiz": [
+            "Beşiktaş KYK Kız Öğrenci Yurdu",
+            "Validebağ Kyk Kız Öğrenci Yurdu",
+            "Darülaceze Kyk Kız Öğrenci Yurdu",
+            "Merkezefendi Kyk Kız Öğrenci Yurdu",
+            "Topkapı Kyk Kız Öğrenci Yurdu",
+            "Merter Kyk Kız Öğrenci Yurdu",
+            "Nilay Aydoğan Kyk Öğrenci Yurdu",
+            "Bahçelievler Yenibosna Kyk Kız Öğrenci Yurdu",
+            "Fatma Refet Angın Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Mahmut Celaleddin Ökten Kyk Erkek Öğrenci Yurdu",
+            "Haliç Kyk Erkek Öğrenci Yurdu",
+            "Cerrah Mehmet Paşa Kyk Erkek Öğrenci Yurdu",
+            "Prof.Dr. Halil İnalcık Kyk Kız Öğrenci Yurdu",
+            "Haydar Aliyev Kyk Erkek Öğrenci Yurdu",
+            "İstanbul-Biruni Kyky Erkek Öğrenci Yurdu",
+            "Başakşehir Kyk Erkek Öğrenci Yurdu",
+            "Kadırga Kyk Erkek Öğrenci Yurdu",
+            "Mimar Sinan Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "İzmir": {
+        "kiz": [
+            "Bergama Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Tire Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Bornova Kyk Kız Öğrenci Yurdu",
+            "Bakırçay Kyk Kız Öğrenci Yurdu",
+            "Bayraklı Kyk Kız Öğrenci Yurdu",
+            "Çeşme Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Gazi Ayşe Hanım Kyk Kız Öğrenci Yurdu",
+            "Hanzade Hatun Kyk Kız Öğrenci Yurdu",
+            "Zübeyde Hanım Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Bergama Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Tire Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Yörük Ali Efe Kyk Erkek Öğrenci Yurdu",
+            "Karabağlar Kyk Erkek Öğrenci Yurdu",
+            "İzmir Efeler Kyk Erkek Yurdu",
+            "Bakırçay Kyk Erkek Öğrenci Yurdu",
+            "Çeşme Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Bornova Kyk Erkek Öğrenci Yurdu",
+            "Çiğli Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Kahramanmaraş": {
+        "kiz": [
+            "Göksun Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Elbistan Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Afşin Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Kahramanmaraş Avşar Kyk Kız ve Erkek Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Göksun Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Elbistan Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Afşin Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Kahramanmaraş Avşar Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Kahramanmaraş Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Karabük": {
+        "kiz": [
+            "Eskipazar Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Katip Çelebi Kyk Kız Öğrenci Yurdu",
+            "Aişe Ana Kyk Kız Öğrenci Yurdu",
+            "Hubbi Hatun Kyk Kız Öğrenci Yurdu",
+            "Asiye Hatun Kyk Kız Öğrenci Yurdu",
+            "Karabük Taşkent Kyk Kız Öğrenci Yurdu",
+            "Karabük Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Eskipazar Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "İsmail Necati Efendi Kyk Erkek Öğrenci Yurdu",
+            "Karabük Bahaddin Gazi Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Karaman": {
+        "kiz": [
+            "Ermenek  Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Hatuniye Kyk Kız Öğrenci Yurdu",
+            "Karaman Kyk Kız Öğrenci Yurdu",
+            "Nefise Sultan Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Ermenek  Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Karaman Piri Reis Kyk Erkek Öğrenci Yurdu",
+            "Karamanoğlu Mehmetbey Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Kars": {
+        "kiz": [
+            "Sarıkamış 100.Yıl Şehitleri Kyk Kız Ve Erkek Öğren",
+            "Kars Hasan Harakani Kyk Kız Öğrenci Yurdu",
+            "Şeref Taşlıova Kyk Kız Öğrenci Yurdu",
+            "Murat Çobanoğlu Kyk Kız Öğrenci Yurdu",
+            "Nuri Paşa Kyk Kız Öğrenci Yurdu Müdürlüğü",
+            "Serhat Kyk Kız Öğrenci Yurdu Müdürlüğü"
+        ],
+        "erkek": [
+            "Sarıkamış 100.Yıl Şehitleri Kyk Kız Ve Erkek Öğren",
+            "İpekyolu Kyk Erkek Öğrenci Yurdu",
+            "Kars  Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Kastamonu": {
+        "kiz": [
+            "Tosya Kyk Kız Öğrenci Yurdu",
+            "Fatma Aliye Hanım Kyk Kız Öğrenci Yurdu",
+            "Baharzade Feride Hanım Kyk Kız Öğrenci Yurdu",
+            "Kastamonu Hüma Hatun Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Abana Kyk Erkek Öğrenci Yurdu",
+            "Şeyh Şaban I Veli Kyk Erkek Öğrenci Yurdu.",
+            "Kastamonu Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Kayseri": {
+        "kiz": [
+            "Yılmaz Turhan Kız ve Erkek Kyk Öğrenci Yurdu",
+            "Pınarbaşı Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Mevlüt Kahraman Kyk Kız Öğrenci Yurdu",
+            "Develi Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Şule Yüksel Şenler Kyk Kız Öğrenci Yurdu",
+            "Pertevniyal Sultan Kyk Kız Öğrenci Yurdu",
+            "Melikgazi Kyk Kız Öğrenci Yurdu",
+            "Hunat Hatun Kyk Kız Öğrenci Yurdu",
+            "Kocasinan Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Yılmaz Turhan Kız ve Erkek Kyk Öğrenci Yurdu",
+            "Pınarbaşı Kyk Kız ve Erkek Öğrenci Yurdu",
+            "İbrahim Tennuri Kyk Erkek Öğrenci Yurdu",
+            "Sahabiye Kyk Erkek Öğrenci Yurdu",
+            "Develi Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Seyyid Burhaneddin Kyk Erkek Öğrenci Yurdu",
+            "Erciyes Kyk Erkek Öğrenci Yurdu",
+            "Kayseri Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Kırıkkale": {
+        "kiz": [
+            "Keskin Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Kırıkkale Hatice Hanım Kyk Kız Öğrenci Yurdu",
+            "Ümmü Hatun Kyk Kız Öğrenci Yurdu",
+            "Kırıkkale Kızılırmak Kyk Kız Öğrenci Yurdu",
+            "Kaletepe Kyk Kız Öğrenci Yurdu Müdürlüğü"
+        ],
+        "erkek": [
+            "Keskin Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Hamidiye Kyk Erkek Öğrenci Yurdu",
+            "Türkan Hatun Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Kırklareli": {
+        "kiz": [
+            "Lüleburgaz Kyk Kız Öğrenci Yurdu",
+            "Babaeski Kyk Kız Öğrenci Yurdu",
+            "Evladı Fatihan Kyk Kız Öğrenci Yurdu",
+            "Hundi Hatun Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Mehmed Eşref Efendi Kyk Erkek Öğrenci Yurdu",
+            "Kırklareli Kyk Erkek Öğrenci Yurdu",
+            "Ahmet Cevdet Paşa Kyk Erkek Öğrenci Yurdu",
+            "Şemsettin Sami Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Kırşehir": {
+        "kiz": [
+            "Kaman Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Kırşehir Ahi Evran Kyk Kız Öğrenci Yurdu",
+            "Elvin Buğra Arslan Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Mecidiye Kyk Kız Öğrenci Yurdu",
+            "Saliha Sultan Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Neşet Ertaş Kyk Erkek Öğrenci Yurdu",
+            "Kaman Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Elvin Buğra Arslan Kyk Kız Ve Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Kilis": {
+        "kiz": [
+            "Muhammed Bedevi Kyk Kız Öğrenci Yurdu",
+            "Nakşidil Valide Sultan Kyk Kız Öğrenci Yurdu",
+            "Kilis Kyk Kız Öğrenci Yurdu",
+            "Kilis Mercidabık Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Kartal Bey Kyk Erkek Öğrenci Yurdu",
+            "Bilali Habeşi Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Kocaeli": {
+        "kiz": [
+            "Gebze Nilüfer Hatun Kyk Kız Öğrenci Yurdu",
+            "Pertevpaşa Kyk Kız Öğrenci Yurdu",
+            "Sultan Baba Kyk Kız Öğrenci Yurdu",
+            "Gölcük Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Kocaeli Zekiye Gündoğdu Kyk Kız Öğrenci Yurdu",
+            "Karamürsel Gazanfer Bilge Kyk Kız Ve Erkek Öğrenci",
+            "Kandıra İl Özel İdaresi Kyk Kız Ve Erkek Yurdu"
+        ],
+        "erkek": [
+            "Kartepe Kyk Erkek Öğrenci Yurdu",
+            "Gölcük Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Karamürsel Gazanfer Bilge Kyk Kız Ve Erkek Öğrenci",
+            "Kandıra İl Özel İdaresi Kyk Kız Ve Erkek Yurdu",
+            "Kocaeli Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Konya": {
+        "kiz": [
+            "Cihanbeyli Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Meram Kyk Kız Öğrenci Yurdu",
+            "Mesnevi Kyk Kız Öğrenci Yurdu",
+            "Anadolu Kyk Kız Öğrenci Yurdu",
+            "Akademi Kyk Kız Öğrenci Yurdu",
+            "Yazır Kyk Kız Öğrenci Yurdu",
+            "Konya Kyk Kız Öğrenci Yurdu",
+            "Bozkır Kyk Mustafa Suna Öz Kız Ve Erkek Yurdu",
+            "Akören Kyk Kız Ve Erkek Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Cihanbeyli Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Ilgın Kyk Erkek Öğrenci Yurdu",
+            "Hacıveyiszade Kyk Erkek Öğrenci Yurdu",
+            "Büyük Selçuklu Kyk Erkek Öğrenci Yurdu",
+            "Bozkır Kyk Mustafa Suna Öz Kız Ve Erkek Yurdu",
+            "Akören Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Hadim Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Ereğli Kyk Erkek Öğrenci Yurdu",
+            "Eşrefoğlu Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Kütahya": {
+        "kiz": [
+            "Hüsnü Özyeğin Kyk Kız Öğrenci Yurdu",
+            "Emet Kyk Kız Öğrenci Yurdu",
+            "Gediz Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Kütahya Zafertepe Kyk Kız Öğrenci Yurdu",
+            "Dumlupınar Kyk Kız Öğrenci Yurdu",
+            "Hayme Ana Kyk Kız Öğrenci Yurdu",
+            "Arslan Bey Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "İslamoğlu Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Simav Kyk Kız ve Erkek Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Gediz Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Yesevi Kyk Erkek Öğrenci Yurdu",
+            "Hezar Dinari Kyk Erkek Öğrenci Yurdu",
+            "Arslan Bey Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "İslamoğlu Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Simav Kyk Kız ve Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Malatya": {
+        "kiz": [
+            "Arapgir Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Battalgazi Kyk Kız Öğrenci Yurdu",
+            "Eşref Bitlis Kyk Kız Öğrenci Yurdu",
+            "Malatya Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "İlhan Akıncı Kyk Erkek Öğrenci Yurdu",
+            "Arapgir Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Beydağı Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Manisa": {
+        "kiz": [
+            "Manisa Hüma Hatun Kyk Kız Öğrenci Yurdu Müdürlüğü",
+            "Demirci Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Kırkağaç Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Köprübaşı  Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Gördes Molla Gürani Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Kula Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Manisa Yunus Emre Kyk Kız Öğrenci Yurdu",
+            "Hatice Hayriye Turgutlu Kyk Kız Öğrenci Yurdu",
+            "Soma Kyk Kız ve Erkek Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Demirci Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Kırkağaç Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Köprübaşı  Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Gördes Molla Gürani Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Kula Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Ayşe Hafsa Sultan Kyk Erkek Öğrenci Yurdu",
+            "Soma Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Salihli Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Turgutlu Sedat Özcan Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Mardin": {
+        "kiz": [
+            "Mardin Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Kasımiye Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Mersin": {
+        "kiz": [
+            "Tarsus Kyk Kız Öğrenci Yurdu",
+            "Müfide İlhan Kyk Kız Öğrenci Yurdu",
+            "Anamur Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Erdemli Kız Ve Erkek Kyk Öğrenci Yurdu",
+            "Mersin Kyk Kız Öğrenci Yurdu",
+            "Silifke Taşucu Kyk Kız ve Erkek Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Mersin GSB Erkek Yurdu",
+            "Limonluk GS Erkek Yurdu",
+            "Anamur Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Erdemli Kız Ve Erkek Kyk Öğrenci Yurdu",
+            "Tarsus Kyk Erkek Öğrenci Yurdu",
+            "Silifke Taşucu Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Mersin Yenişehir Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Muğla": {
+        "kiz": [
+            "Fethiye Kyk Kız Öğrenci Yurdu Müdürlüğü",
+            "Marmaris Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Milas Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Muğla Ortaca Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Muğla Milli Piyango Kyk Kız Öğrenci Yurdu",
+            "Şahidi Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Marmaris Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Fethiye Sıtkı Mefharet Koçman Kyk Erkek Yurdu",
+            "Milas Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Muğla Ortaca Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Muğla Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Muş": {
+        "kiz": [
+            "Malazgirt Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Muş Müştak Baba Kyk Kız Öğrenci Yurdu",
+            "Sultan Alparslan Kyk Kız Öğrenci Yurdu",
+            "Danişmend Gazi Kyk Kız ve Erkek Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Malazgirt Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Danişmend Gazi Kyk Kız ve Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Nevşehir": {
+        "kiz": [
+            "Kozaklı Kyk Kız Öğrenci Yurdu",
+            "Ürgüp Kyk Kız Öğrenci Yurdu",
+            "Avanos Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Hünkar Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Fatıma Sultan Kyk Kız Öğrenci Yurdu",
+            "Ayşe Hümaşah Sultan Kyk Kız Öğrenci Yurdu",
+            "Nevşehir Kyk Kız Öğrenci Yurdu",
+            "Gülşehir Kyk Kız Öğrenci Yurdu",
+            "Kapadokya Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Nevşehir Kyk Erkek Öğrenci Yurdu",
+            "Başhisar Kyk Erkek Öğrenci Yurdu",
+            "Avanos Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Hünkar Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Hacı Bektaş-ı Veli Kyk Erkek Öğrenci Yurdu",
+            "Haluk Nur Baki Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Niğde": {
+        "kiz": [
+            "Ulukışla Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Sultan I. Kılıçarslan Kyk Kız Öğrenci Yurdu",
+            "Fadimana Halisdemir Kyk Kız Öğrenci Yurdu",
+            "Bor Kyk Kız Öğrenci Yurdu",
+            "Sultan II. Kılıçarslan Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Ulukışla Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Ömer Halisdemir Kyk Erkek Öğrenci Yurdu",
+            "Ahmet Kuddusi Kyk Erkek Öğrenci Yurdu",
+            "Niğde Milli Piyango Kyk Erkek Öğrenci Yurdu",
+            "Niğde Ertuğrulgazi Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Ordu": {
+        "kiz": [
+            "Fatsa Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Ünye Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Ordu Lebibe Ergin Karlıbel Kyk Kız Öğrenci Yurdu",
+            "Mehmet Fuad Köprülü Kyk Kız Öğrenci Yurdu",
+            "Evliya Çelebi Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Fatsa Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Ünye Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Ordu Kyk Erkek Öğrenci Yurdu",
+            "Hekimoğlu Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Osmaniye": {
+        "kiz": [
+            "Kayıboyu Kyk Kız Öğrenci Yurdu",
+            "Kadirli Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Osmaniye Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Cebelibereket Kyk Erkek Öğrenci Yurdu",
+            "Kadirli Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Karacaoğlan Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Rize": {
+        "kiz": [
+            "Güneysu Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Ardeşen Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Çayeli A.Mesut Yılmaz Kyk Kız Ve Erkek Yurdu",
+            "Pazar Kyk Kız Öğrenci Yurdu",
+            "Fındıklı Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Tenzile Erdoğan Kyk Kız Öğrenci Yurdu",
+            "Rize Kyk Kız Öğrenci Yurdu",
+            "Ayder Kyk Kız Öğrenci Yurdu",
+            "Devlet Hatun Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Güneysu Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Ardeşen Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Çayeli A.Mesut Yılmaz Kyk Kız Ve Erkek Yurdu",
+            "Fındıklı Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Derepazarı Kaptan Arif Bayraktar Kyk Erkek Öğrenci",
+            "Rize Yeşilçay Kyk Erkek Öğrenci Yurdu",
+            "Ahmet Tevfik İleri Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Sakarya": {
+        "kiz": [
+            "Akyazı Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Karasu Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Sakarya Kyk Kız Öğrenci Yurdu",
+            "Arif Nihat Asya Kyk Kız Öğrenci Yurdu",
+            "Rahime Sultan Kyk Kız Öğrenci Yurdu",
+            "Geyve Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Sakarya Sabahattin Zaim Kyk Kız Öğrenci Yurdu",
+            "Sapanca Kyk Kız Öğrenci Yurdu",
+            "Hendek Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Akyazı Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Karasu Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Geyve Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Ayşe Hümeyra Ökten Kyk Erkek Öğrenci Yurdu",
+            "Abdurrahman Gürses Kyk Erkek Öğrenci Yurdu",
+            "Muhammet Fatih Safitürk Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Samsun": {
+        "kiz": [
+            "Karadeniz Kyk Kız Öğrenci Yurdu",
+            "Bafra Milli Piyango Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Alaçam Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Kavak Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Terme Kyk Kız Ve Erkek Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Çarşamba Kyk Erkek Öğrenci Yurdu",
+            "Bafra Milli Piyango Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Alaçam Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Kavak Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Terme Kyk Kız Ve Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Siirt": {
+        "kiz": [
+            "Kurtalan Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Hassa Hatun Kyk Kız Öğrenci Yurdu",
+            "Esmehan Sultan Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Kurtalan Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "İsmail Fakirullah Kyk Erkek Öğrenci Yurdu",
+            "Siirt Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Sinop": {
+        "kiz": [
+            "Gerze Kyk Kız Öğrenci Yurdu",
+            "Seyyid İbrahim Bilal Kyk Kız Öğrenci Yurdu",
+            "Türkeli Kyk Kız Öğrenci Yurdu Müdürlüğü",
+            "Boyabat Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Ayancık Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Sinop Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Boyabat Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Ayancık Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Mahmud Kefevi Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Sivas": {
+        "kiz": [
+            "Yıldızeli Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Zara Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Prof.Dr. Mahir Tevrüz Kyk Kız Ve Erkek Yurdu",
+            "Gürün Enver Bostancı Kyk Kız Ve Erkek Yurdu",
+            "Hafik Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Kangal Hasan Yılmaz Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Yıldız Kyk Kız Öğrenci Yurdu",
+            "Sivas Sancaktar Kyk Kız Öğrenci Yurdu",
+            "Tecer Yurt Müdürlüğü"
+        ],
+        "erkek": [
+            "Yıldızeli Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Zara Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Prof.Dr. Mahir Tevrüz Kyk Kız Ve Erkek Yurdu",
+            "Gürün Enver Bostancı Kyk Kız Ve Erkek Yurdu",
+            "Hafik Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Kangal Hasan Yılmaz Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Şarkışla Muhsin Yazıcıoğlu Kyk Kız Ve Erkek Yurdu",
+            "Kadı Burhaneddin Kyk Erkek Öğrenci Yurdu",
+            "Şemseddin Sivâsî Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Şanlıurfa": {
+        "kiz": [
+            "Şifa Hatun Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Harran Kyk Kız Öğrenci Yurdu (ş.urfa)",
+            "Şanlıurfa Kyk Kız Öğrenci Yurdu",
+            "Hacer Ana Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Şifa Hatun Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Mehmet Akif İnan Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Şırnak": {
+        "kiz": [
+            "Cezeri Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Şırnak Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Tekirdağ": {
+        "kiz": [
+            "Günebakan Kyk Kız Öğrenci Yurdu",
+            "Tekirdağ Kyk Kız Öğrenci Yurdu",
+            "Çorlu Kyk Kız Öğrenci Yurdu",
+            "Süleymanpaşa Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Dr. Sadık Ahmet Kyk Erkek Öğrenci Yurdu",
+            "Çorlu Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Tokat": {
+        "kiz": [
+            "Zile Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Erbaa Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Turhal Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Gülsüm Ana Kyk Kız Öğrenci Yurdu",
+            "Mehmed Emin Tokadi Kyk Kız Öğrenci Yurdu",
+            "Tokat İbni Kemal Kyk Kız Öğrenci Yurdu",
+            "Ballıca Kyk Kız Öğrenci Yurdu",
+            "Niksar Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Tokat Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Zile Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Erbaa Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Turhal Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Aydoğan Aydın Kyk Erkek Öğrenci Yurdu",
+            "Tokat Gaziosmanpaşa Kyk Erkek Öğrenci Yurdu",
+            "Niksar Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Ali Paşa Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Plevne Kyk Erkek Öğrenci Yurdu",
+            "Zile Kyk Kız ve Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Trabzon": {
+        "kiz": [
+            "Özcan Kırali Kyk Kız Yurdu",
+            "Fuat Sezgin Kyk Kız Öğrenci Yurdu",
+            "Beşikdüzü Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Maçka Şükrü Karadeniz Kyk Kız Ve Erkek Yurdu",
+            "Gülbahar Hatun Kyk Kız Öğrenci Yurdu",
+            "Trabzon Doğu Karadeniz Kyk Kız Öğrenci Yurdu",
+            "Adnan Demirtürk Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Yomra Kyk Kız Öğrenci Yurdu",
+            "Sare Hatun Yurt Müdürlüğü"
+        ],
+        "erkek": [
+            "Münür Özkurt Kyk Erkek Öğrenci Yurdu",
+            "Beşikdüzü Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Maçka Şükrü Karadeniz Kyk Kız Ve Erkek Yurdu",
+            "Akçaabat Fatih Kyk Erkek Öğrenci Yurdu",
+            "Yomra Kanuni Kyk Erkek Öğrenci Yurdu",
+            "Trabzon Kyk Erkek Öğrenci Yurdu",
+            "Adnan Demirtürk Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Of Aşıkkutlu Kyk Erkek Öğrenci Yurdu",
+            "İsminaz Kanca Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Tunceli": {
+        "kiz": [
+            "Çemişgezek Kyk Kız Öğrenci Yurdu",
+            "100. Yıl Kyk Kız Öğrenci Yurdu",
+            "Ehlibeyt Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Tunceli Kyk Kız ve Erkek Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Ehlibeyt Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Tunceli Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Munzur Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Uşak": {
+        "kiz": [
+            "Yaren Kyk Kız Öğrenci Yurdu",
+            "Uşak Kyk Kız Öğrenci Yurdu",
+            "Latife Hanım Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Mehmet Hacım Kyk Erkek Öğrenci Yurdu",
+            "Uşak Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Van": {
+        "kiz": [
+            "Erciş Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Gevaş Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Aişe Sıddıka Kyk Kız Öğrenci Yurdu",
+            "Van Kyk Kız Öğrenci Yurdu",
+            "Seyyid Fehim Arvasi Kyk Kız Öğrenci Yurdu",
+            "Özalp Kyk Kız Ve Erkek Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Erciş Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Gevaş Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Süleyman Şah Kyk Erkek Öğrenci Yurdu",
+            "Özalp Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Amine Hatun Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Yalova": {
+        "kiz": [
+            "Akça Hatun Kyk Kız Öğrenci Yurdu Müdürlüğü",
+            "Dilşad Hatun Kyk Kız Öğrenci Yurdu",
+            "Çınarcık Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Yalova Kyk Erkek Öğrenci Yurdu",
+            "Termal Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Yozgat": {
+        "kiz": [
+            "Sorgun Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Yerköy Molla Hüsrev Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Akdağmadeni Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Yozgat Kyk Kız Öğrenci Yurdu",
+            "Yozgat Sürmeli Kyk Kız Öğrenci Yurdu",
+            "Kınalı Hasan Kyk Kız Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Sorgun Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Yerköy Molla Hüsrev Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Akdağmadeni Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Bozok Kyk Erkek Öğrenci Yurdu",
+            "Çamlık Kyk Erkek Öğrenci Yurdu",
+            "Yozgat Esentepe Kyk Erkek Öğrenci Yurdu",
+            "Ahmet Efendi Kyk Erkek Öğrenci Yurdu"
+        ]
+    },
+    "Zonguldak": {
+        "kiz": [
+            "Kilimli Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Kozlu Kyk Kız Öğrenci Yurdu",
+            "Devrek Sos.Yar.Day.Vak.Kyk Kız Ve Erkek Yurdu",
+            "Karadeniz Ereğli Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Uzun Mehmet Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Nesibe Hatun Kyk Kız Öğrenci Yurdu",
+            "Hatice Turhan Sultan Kyk Kız Öğrenci Yurdu",
+            "Çaycuma Kyk Kız ve Erkek Öğrenci Yurdu"
+        ],
+        "erkek": [
+            "Kilimli Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Devrek Sos.Yar.Day.Vak.Kyk Kız Ve Erkek Yurdu",
+            "Karadeniz Ereğli Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Uzun Mehmet Kyk Kız Ve Erkek Öğrenci Yurdu",
+            "Çaycuma Kyk Kız ve Erkek Öğrenci Yurdu",
+            "Zonguldak Kyk Erkek Öğrenci Yurdu"
+        ]
+    }
+}

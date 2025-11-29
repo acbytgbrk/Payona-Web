@@ -1,0 +1,156 @@
+@page
+@model ChatModel
+@{
+    ViewData["Title"] = "Sohbet - Payona";
+}
+
+<div style="max-width: 900px; margin: 0 auto;">
+    <div class="card" style="height: calc(100vh - 150px); display: flex; flex-direction: column;">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2 class="card-title" id="chatUserName">Sohbet</h2>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;" id="chatUserInfo"></p>
+            </div>
+            <button class="btn btn-secondary" onclick="sendMatchRequest()">Eşleşme Talebi Gönder</button>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <div class="text-center" style="padding: 2rem; color: var(--text-secondary);">
+                    <div class="spinner" style="margin: 0 auto;"></div>
+                    <p class="mt-2">Mesajlar yükleniyor...</p>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <input 
+                    type="text" 
+                    id="messageInput" 
+                    class="form-input" 
+                    placeholder="Mesajınızı yazın..." 
+                    style="flex: 1;"
+                />
+                <button class="btn btn-primary" onclick="sendMessage()">Gönder</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="module">
+        import { authService } from '/js/modules/auth.js';
+        import { chatService } from '/js/modules/chat.js';
+        import { matchService } from '/js/modules/match.js';
+
+        // Check authentication
+        if (!authService.isAuthenticated()) {
+            window.location.href = '/';
+        }
+
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const otherUserId = urlParams.get('userId');
+        const otherUserName = urlParams.get('userName');
+
+        if (!otherUserId) {
+            window.location.href = '/Dashboard';
+        }
+
+        const currentUser = authService.getCurrentUser();
+        let stopPolling = null;
+
+        // Set chat header
+        document.getElementById('chatUserName').textContent = otherUserName || 'Sohbet';
+        if (otherUserName) {
+            document.getElementById('chatUserInfo').textContent = `${otherUserName} ile sohbet ediyorsunuz`;
+        }
+
+        // Load messages
+        async function loadMessages() {
+            try {
+                const messages = await chatService.getConversation(otherUserId);
+                renderMessages(messages);
+            } catch (error) {
+                console.error('Error loading messages:', error);
+                document.getElementById('chatMessages').innerHTML = 
+                    '<p class="text-error">Mesajlar yüklenemedi</p>';
+            }
+        }
+
+        function renderMessages(messages) {
+            const container = document.getElementById('chatMessages');
+            
+            if (!messages || messages.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">Henüz mesaj yok. Konuşmayı başlatın!</p>';
+                return;
+            }
+
+            container.innerHTML = messages.map(msg => {
+                const isSent = msg.senderId === currentUser.id;
+                return `
+                    <div class="message ${isSent ? 'message-sent' : 'message-received'}">
+                        <div style="font-weight: 500; margin-bottom: 0.25rem;">
+                            ${isSent ? 'Siz' : (msg.senderName || 'Kullanıcı')}
+                        </div>
+                        <div>${msg.content}</div>
+                        <div style="font-size: 0.75rem; opacity: 0.8; margin-top: 0.25rem;">
+                            ${new Date(msg.createdAt).toLocaleTimeString('tr-TR')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const content = input.value.trim();
+
+            if (!content) return;
+
+            try {
+                await chatService.sendMessage(otherUserId, content);
+                input.value = '';
+                loadMessages(); // Reload to show new message
+            } catch (error) {
+                alert('Mesaj gönderilemedi: ' + error.message);
+            }
+        }
+
+        async function sendMatchRequest() {
+            if (!confirm('Bu kullanıcıya eşleşme talebi göndermek istiyor musunuz?')) return;
+
+            try {
+                // Note: This requires fingerprintId and mealRequestId
+                // For now, we'll show an alert that this feature needs meal request selection
+                alert('Eşleşme talebi özelliği: Lütfen önce ana sayfadan bir yemek talebi seçin, sonra sohbete açın.');
+                // In a full implementation, you'd pass mealRequestId from the dashboard
+            } catch (error) {
+                alert('Eşleşme talebi gönderilemedi: ' + error.message);
+            }
+        }
+
+        // Enter key to send
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Start polling for new messages
+        stopPolling = chatService.startPolling(otherUserId, (messages) => {
+            renderMessages(messages);
+        }, 2000);
+
+        // Initial load
+        loadMessages();
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (stopPolling) stopPolling();
+        });
+    </script>
+}
+

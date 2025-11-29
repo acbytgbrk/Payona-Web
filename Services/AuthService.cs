@@ -57,6 +57,28 @@ public class AuthService
     // ✅ Giriş Yap
     public async Task<AuthResponse?> LoginAsync(LoginRequest request)
     {
+        // Temporary test user for development (remove in production)
+        if (request.Email == "acabeytugberk@gmail.com" && request.Password == "1234567")
+        {
+            var testUserId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            var testToken = _jwtService.GenerateTokenForTestUser(testUserId, request.Email);
+
+            return new AuthResponse
+            {
+                Token = testToken,
+                User = new UserDto
+                {
+                    Id = testUserId,
+                    Email = request.Email,
+                    Name = "Tuğberk",
+                    Surname = "Acabey",
+                    Gender = null,
+                    City = null,
+                    Dorm = null
+                }
+            };
+        }
+
         var user = await _context.Users.Include(user => user.DormInfo).FirstOrDefaultAsync(u => u.Email == request.Email);
 
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))

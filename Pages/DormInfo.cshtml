@@ -1,0 +1,168 @@
+@page
+@model DormInfoModel
+@{
+    ViewData["Title"] = "Profilinizi Tamamlayın - Payona";
+}
+
+<div style="max-width: 600px; margin: 2rem auto;">
+    <div class="card">
+        <div class="card-header text-center">
+            <h1 class="card-title">Profilinizi Tamamlayın</h1>
+            <p style="color: var(--text-secondary);">Lütfen yurt bilgilerinizi giriniz</p>
+        </div>
+
+        <form id="dormInfoForm">
+            <div class="form-group">
+                <label class="form-label" for="gender">Cinsiyet</label>
+                <select id="gender" class="form-select" required>
+                    <option value="">Cinsiyet Seçiniz</option>
+                    <option value="Male">Erkek</option>
+                    <option value="Female">Kadın</option>
+                    <option value="Other">Diğer</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="city">Şehir</label>
+                <select id="city" class="form-select" required>
+                    <option value="">Şehir Seçiniz</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="dorm">Yurt</label>
+                <select id="dorm" class="form-select" required>
+                    <option value="">Önce cinsiyet ve şehir seçiniz</option>
+                </select>
+            </div>
+
+            <div id="dormInfoError" class="text-error hidden mb-2"></div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Devam Et</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="module">
+        import { authService } from '/js/modules/auth.js';
+        import { loadDormData, getCities, getDormsForCity } from '/js/modules/dormData.js';
+
+        // Check authentication
+        if (!authService.isAuthenticated()) {
+            window.location.href = '/';
+        }
+
+        const user = authService.getCurrentUser();
+        if (user && !authService.requiresDormInfo()) {
+            window.location.href = '/Dashboard';
+        }
+
+        // Load dorm data and populate cities
+        let dormData = null;
+        const citySelect = document.getElementById('city');
+        const dormSelect = document.getElementById('dorm');
+        const genderSelect = document.getElementById('gender');
+
+        async function initDormData() {
+            dormData = await loadDormData();
+            const cities = getCities();
+            
+            cities.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city;
+                option.textContent = city;
+                citySelect.appendChild(option);
+            });
+
+            // Pre-fill if available
+            if (user) {
+                if (user.gender) {
+                    genderSelect.value = user.gender;
+                    updateDormOptions();
+                }
+                if (user.city) {
+                    citySelect.value = user.city;
+                    updateDormOptions();
+                }
+                if (user.dorm) {
+                    dormSelect.value = user.dorm;
+                }
+            }
+        }
+
+        function updateDormOptions() {
+            const gender = genderSelect.value;
+            const city = citySelect.value;
+            
+            dormSelect.innerHTML = '<option value="">Yurt Seçiniz</option>';
+            
+            if (gender && city && dormData) {
+                const dorms = getDormsForCity(city, gender);
+                dorms.forEach(dorm => {
+                    const option = document.createElement('option');
+                    option.value = dorm;
+                    option.textContent = dorm;
+                    dormSelect.appendChild(option);
+                });
+            }
+        }
+
+        genderSelect.addEventListener('change', updateDormOptions);
+        citySelect.addEventListener('change', updateDormOptions);
+
+        initDormData();
+
+        document.getElementById('dormInfoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errorDiv = document.getElementById('dormInfoError');
+            errorDiv.classList.add('hidden');
+            errorDiv.textContent = '';
+
+            const gender = document.getElementById('gender').value;
+            const city = document.getElementById('city').value;
+            const dorm = document.getElementById('dorm').value;
+            const userId = user.id;
+
+            if (!gender || !city || !dorm) {
+                errorDiv.textContent = 'Lütfen tüm alanları doldurun';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                // Trim and validate inputs
+                const trimmedGender = gender.trim();
+                const trimmedCity = city.trim();
+                const trimmedDorm = dorm.trim();
+                
+                if (!trimmedGender || !trimmedCity || !trimmedDorm) {
+                    errorDiv.textContent = 'Lütfen tüm alanları doldurun';
+                    errorDiv.classList.remove('hidden');
+                    return;
+                }
+
+                await authService.updateDormInfo(userId, trimmedGender, trimmedCity, trimmedDorm);
+                // Update user in storage
+                const updatedUser = { ...user, gender: trimmedGender, city: trimmedCity, dorm: trimmedDorm };
+                sessionStorage.setItem('user', JSON.stringify(updatedUser));
+                window.location.href = '/Dashboard';
+            } catch (error) {
+                let errorMessage = error.message || 'Profil güncellenemedi';
+                
+                // Translate common error messages
+                if (errorMessage.includes('did not match the expected pattern')) {
+                    errorMessage = 'Geçersiz veri formatı. Lütfen tüm alanları doğru şekilde doldurun.';
+                } else if (errorMessage.includes('required') || errorMessage.includes('gerekli')) {
+                    errorMessage = 'Lütfen tüm alanları doldurun';
+                } else if (errorMessage.includes('zorunlu')) {
+                    errorMessage = errorMessage;
+                }
+                
+                console.error('DormInfo update error:', error);
+                errorDiv.textContent = errorMessage;
+                errorDiv.classList.remove('hidden');
+            }
+        });
+    </script>
+}
+

@@ -8,6 +8,7 @@ public class MealRequestDto
     public Guid UserId { get; set; }
     public string UserName { get; set; } = string.Empty;
     public string? UserGender { get; set; }
+    public string? UserDorm { get; set; }
     public string MealType { get; set; } = string.Empty;
     public DateTime? PreferredDate { get; set; }
     public TimeSpan? PreferredStartTime { get; set; }
