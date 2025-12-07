@@ -110,252 +110,302 @@
 </div>
 
 @section Scripts {
-    <script type="module">
-        import { authService } from '/js/modules/auth.js';
-        import { mealRequestService } from '/js/modules/mealRequest.js';
-        import { fingerprintService } from '/js/modules/fingerprint.js';
-        import { matchService } from '/js/modules/match.js';
+<script type="module">
+    import { authService } from '/js/modules/auth.js';
+    import { mealRequestService } from '/js/modules/mealRequest.js';
+    import { fingerprintService } from '/js/modules/fingerprint.js';
+    import { matchService } from '/js/modules/match.js';
 
-        // Check authentication
-        if (!authService.isAuthenticated()) {
-            window.location.href = '/';
+    // Check authentication
+    if (!authService.isAuthenticated()) {
+        window.location.href = '/';
+    }
+
+    const user = authService.getCurrentUser();
+    if (authService.requiresDormInfo()) {
+        window.location.href = '/DormInfo';
+    }
+
+    let currentPeriod = 'week';
+    let activityData = null;
+
+    // --- YENİ EKLENEN KISIM: VERİ GRUPLANDIRMA ---
+    function aggregateData(dailyStats, period) {
+        if (!dailyStats || dailyStats.length === 0) return [];
+        
+        // Gün ve Hafta için olduğu gibi dön
+        if (period === 'day' || period === 'week') {
+            return dailyStats;
         }
 
-        const user = authService.getCurrentUser();
-        if (authService.requiresDormInfo()) {
-            window.location.href = '/DormInfo';
-        }
+        const groupedData = {};
 
-        let currentPeriod = 'week';
-        let activityData = null;
+        dailyStats.forEach(stat => {
+            const date = new Date(stat.date);
+            let key;
+            let label;
+            let sortDate;
 
-        // Load activity stats
-        async function loadActivityStats(period = 'week') {
-            try {
-                const stats = await matchService.getActivityStats(period);
-                activityData = stats;
-                updateStatsDisplay(stats);
-                drawChart(stats.dailyStats, period);
-            } catch (error) {
-                console.error('Error loading activity stats:', error);
+            if (period === 'month') {
+                // Ay seçildiyse: Haftalara böl (1., 2. hafta vb.)
+                const dayOfMonth = date.getDate();
+                const weekNum = Math.ceil(dayOfMonth / 7); 
+                key = `week-${weekNum}`;
+                label = `${weekNum}. Hafta`;
+                // Sıralama için o haftanın tahmini başlangıcı
+                sortDate = new Date(date.getFullYear(), date.getMonth(), (weekNum - 1) * 7 + 1);
+            } else if (period === 'year') {
+                // Yıl seçildiyse: Aylara böl
+                const monthIndex = date.getMonth();
+                key = `month-${monthIndex}`;
+                // Label drawChart içinde formatlanacak
+                sortDate = new Date(date.getFullYear(), monthIndex, 1);
+                label = sortDate; 
             }
-        }
 
-        function updateStatsDisplay(stats) {
-            document.getElementById('totalRequestsCreated').textContent = stats.totalRequestsCreated || 0;
-            document.getElementById('totalMatchesAccepted').textContent = stats.totalMatchesAccepted || 0;
-            document.getElementById('totalMatchesCreated').textContent = stats.totalMatchesCreated || 0;
-        }
-
-        // Initialize Canvas
-        function initCanvas() {
-            const canvas = document.getElementById('activityCanvas');
-            const ctx = canvas.getContext('2d');
-            
-            // Set canvas size
-            canvas.width = canvas.offsetWidth;
-            canvas.height = 200;
-
-            // Draw activity chart
-            window.drawChart = function(dailyStats, period) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
-                if (!dailyStats || dailyStats.length === 0) {
-                    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary');
-                    ctx.font = '14px sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('Henüz veri yok', canvas.width / 2, canvas.height / 2);
-                    return;
-                }
-
-                const padding = 40;
-                const chartWidth = canvas.width - padding * 2;
-                const chartHeight = canvas.height - padding * 2;
-                
-                // Draw grid
-                ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-color');
-                ctx.lineWidth = 1;
-                
-                const dataPoints = dailyStats.length;
-                const maxValue = Math.max(
-                    ...dailyStats.map(d => d.requestsCreated + d.matchesCreated + d.matchesAccepted),
-                    1
-                );
-                
-                // Horizontal lines
-                for (let i = 0; i <= 5; i++) {
-                    const y = padding + (chartHeight / 5) * i;
-                    ctx.beginPath();
-                    ctx.moveTo(padding, y);
-                    ctx.lineTo(canvas.width - padding, y);
-                    ctx.stroke();
-                }
-                
-                // Vertical lines
-                for (let i = 0; i <= dataPoints; i++) {
-                    const x = padding + (chartWidth / dataPoints) * i;
-                    ctx.beginPath();
-                    ctx.moveTo(x, padding);
-                    ctx.lineTo(x, canvas.height - padding);
-                    ctx.stroke();
-                }
-                
-                // Draw bars
-                const barWidth = chartWidth / dataPoints - 5;
-                const colors = {
-                    requests: getComputedStyle(document.documentElement).getPropertyValue('--accent-primary'),
-                    matches: getComputedStyle(document.documentElement).getPropertyValue('--accent-secondary'),
-                    accepted: getComputedStyle(document.documentElement).getPropertyValue('--accent-secondary')
+            if (!groupedData[key]) {
+                groupedData[key] = {
+                    date: sortDate, 
+                    labelOverride: period === 'month' ? label : null, // Özel etiket (Ay görünümü için)
+                    requestsCreated: 0,
+                    matchesCreated: 0,
+                    matchesAccepted: 0
                 };
-                
-                dailyStats.forEach((day, index) => {
-                    const x = padding + (chartWidth / dataPoints) * index + 2.5;
-                    const total = day.requestsCreated + day.matchesCreated + day.matchesAccepted;
-                    
-                    // Stacked bars
-                    let currentY = canvas.height - padding;
-                    
-                    // Requests created (bottom)
-                    if (day.requestsCreated > 0) {
-                        const height = (day.requestsCreated / maxValue) * chartHeight;
-                        ctx.fillStyle = colors.requests;
-                        ctx.fillRect(x, currentY - height, barWidth, height);
-                        currentY -= height;
-                    }
-                    
-                    // Matches created (middle)
-                    if (day.matchesCreated > 0) {
-                        const height = (day.matchesCreated / maxValue) * chartHeight;
-                        ctx.fillStyle = colors.matches;
-                        ctx.fillRect(x, currentY - height, barWidth, height);
-                        currentY -= height;
-                    }
-                    
-                    // Matches accepted (top)
-                    if (day.matchesAccepted > 0) {
-                        const height = (day.matchesAccepted / maxValue) * chartHeight;
-                        ctx.fillStyle = colors.accepted;
-                        ctx.globalAlpha = 0.7;
-                        ctx.fillRect(x, currentY - height, barWidth, height);
-                        ctx.globalAlpha = 1.0;
-                    }
-                });
-                
-                // Draw labels
+            }
+
+            // Değerleri topla
+            groupedData[key].requestsCreated += stat.requestsCreated;
+            groupedData[key].matchesCreated += stat.matchesCreated;
+            groupedData[key].matchesAccepted += stat.matchesAccepted;
+        });
+
+        // Objeyi array'e çevir ve tarihe göre sırala
+        return Object.values(groupedData).sort((a, b) => new Date(a.date) - new Date(b.date));
+    }
+    // --- GRUPLANDIRMA BITIŞ ---
+
+    // Load activity stats
+    async function loadActivityStats(period = 'week') {
+        try {
+            const stats = await matchService.getActivityStats(period);
+            activityData = stats;
+            updateStatsDisplay(stats);
+            
+            // Veriyi işle (Gruplandır)
+            const processedData = aggregateData(stats.dailyStats, period);
+            drawChart(processedData, period);
+        } catch (error) {
+            console.error('Error loading activity stats:', error);
+        }
+    }
+
+    function updateStatsDisplay(stats) {
+        document.getElementById('totalRequestsCreated').textContent = stats.totalRequestsCreated || 0;
+        document.getElementById('totalMatchesAccepted').textContent = stats.totalMatchesAccepted || 0;
+        document.getElementById('totalMatchesCreated').textContent = stats.totalMatchesCreated || 0;
+    }
+
+    // Initialize Canvas
+    function initCanvas() {
+        const canvas = document.getElementById('activityCanvas');
+        const ctx = canvas.getContext('2d');
+        // Set canvas size
+        canvas.width = canvas.offsetWidth;
+        canvas.height = 200;
+
+        // Draw activity chart
+        window.drawChart = function(dailyStats, period) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (!dailyStats || dailyStats.length === 0) {
                 ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary');
-                ctx.font = '11px sans-serif';
+                ctx.font = '14px sans-serif';
                 ctx.textAlign = 'center';
+                ctx.fillText('Henüz veri yok', canvas.width / 2, canvas.height / 2);
+                return;
+            }
+
+            const padding = 40;
+            const chartWidth = canvas.width - padding * 2;
+            const chartHeight = canvas.height - padding * 2;
+            // Draw grid
+            ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-color');
+            ctx.lineWidth = 1;
+            const dataPoints = dailyStats.length;
+            const maxValue = Math.max(
+                ...dailyStats.map(d => d.requestsCreated + d.matchesCreated + d.matchesAccepted),
+                1
+            );
+            // Horizontal lines
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (chartHeight / 5) * i;
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(canvas.width - padding, y);
+                ctx.stroke();
+            }
+            // Vertical lines
+            for (let i = 0; i <= dataPoints; i++) {
+                const x = padding + (chartWidth / dataPoints) * i;
+                ctx.beginPath();
+                ctx.moveTo(x, padding);
+                ctx.lineTo(x, canvas.height - padding);
+                ctx.stroke();
+            }
+            // Draw bars
+            const barWidth = chartWidth / dataPoints - 5;
+            const colors = {
+                requests: getComputedStyle(document.documentElement).getPropertyValue('--accent-primary'),
+                matches: getComputedStyle(document.documentElement).getPropertyValue('--accent-secondary'),
+                accepted: getComputedStyle(document.documentElement).getPropertyValue('--accent-secondary')
+            };
+            dailyStats.forEach((day, index) => {
+                const x = padding + (chartWidth / dataPoints) * index + 2.5;
+                const total = day.requestsCreated + day.matchesCreated + day.matchesAccepted;
+                // Stacked bars
+                let currentY = canvas.height - padding;
+                // Requests created (bottom)
+                if (day.requestsCreated > 0) {
+                    const height = (day.requestsCreated / maxValue) * chartHeight;
+                    ctx.fillStyle = colors.requests;
+                    ctx.fillRect(x, currentY - height, barWidth, height);
+                    currentY -= height;
+                }
+                // Matches created (middle)
+                if (day.matchesCreated > 0) {
+                    const height = (day.matchesCreated / maxValue) * chartHeight;
+                    ctx.fillStyle = colors.matches;
+                    ctx.fillRect(x, currentY - height, barWidth, height);
+                    currentY -= height;
+                }
+                // Matches accepted (top)
+                if (day.matchesAccepted > 0) {
+                    const height = (day.matchesAccepted / maxValue) * chartHeight;
+                    ctx.fillStyle = colors.accepted;
+                    ctx.globalAlpha = 0.7;
+                    ctx.fillRect(x, currentY - height, barWidth, height);
+                    ctx.globalAlpha = 1.0;
+                }
+            });
+            
+            // Draw labels
+            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary');
+            ctx.font = '11px sans-serif';
+            ctx.textAlign = 'center';
+            dailyStats.forEach((day, index) => {
+                // Etiketleri çubukların tam ortasına koy
+                const x = padding + (chartWidth / dataPoints) * index + (chartWidth / dataPoints) / 2;
                 
-                dailyStats.forEach((day, index) => {
-                    const x = padding + (chartWidth / dataPoints) * index + chartWidth / (dataPoints * 2);
-                    const date = new Date(day.date);
-                    let label = '';
-                    
+                const date = new Date(day.date);
+                let label = '';
+
+                // Eğer aggregateData fonksiyonundan özel bir label gelmişse onu kullan
+                if (day.labelOverride) {
+                    label = day.labelOverride;
+                } else {
                     if (period === 'day') {
                         label = date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
                     } else if (period === 'week') {
                         label = date.toLocaleDateString('tr-TR', { weekday: 'short' });
-                    } else if (period === 'month') {
-                        label = date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
                     } else if (period === 'year') {
+                        // Yıl görünümünde sadece Ay ismini yaz
                         label = date.toLocaleDateString('tr-TR', { month: 'short' });
                     }
-                    
-                    ctx.fillText(label, x, canvas.height - 10);
-                });
-            };
-            
-            // Redraw on resize
-            window.addEventListener('resize', () => {
-                canvas.width = canvas.offsetWidth;
-                if (activityData) {
-                    drawChart(activityData.dailyStats, currentPeriod);
                 }
+                
+                ctx.fillText(label, x, canvas.height - 10);
             });
-        }
-
-        initCanvas();
-
-        // Period selector
-        document.getElementById('periodSelect').addEventListener('change', (e) => {
-            currentPeriod = e.target.value;
-            loadActivityStats(currentPeriod);
+        };
+        
+        // Redraw on resize
+        window.addEventListener('resize', () => {
+            canvas.width = canvas.offsetWidth;
+            if (activityData) {
+                // Resize sırasında da aggregation yapmalıyız
+                const processedData = aggregateData(activityData.dailyStats, currentPeriod);
+                drawChart(processedData, currentPeriod);
+            }
         });
+    }
 
-        // Load initial data
-        loadActivityStats('week');
+    initCanvas();
 
-        // Load requests
-        async function loadRequests() {
-            try {
-                const [myMealRequests, allMealRequests, myFingerprints, allFingerprints] = await Promise.all([
-                    mealRequestService.getMy(),
-                    mealRequestService.getAll(),
-                    fingerprintService.getMy(),
-                    fingerprintService.getAll()
-                ]);
+    // Period selector
+    document.getElementById('periodSelect').addEventListener('change', (e) => {
+        currentPeriod = e.target.value;
+        loadActivityStats(currentPeriod);
+    });
 
-                const user = authService.getCurrentUser();
-                
-                // Combine my requests (both meal requests and fingerprints) - filter out cancelled
-                const myRequests = [
-                    ...myMealRequests.filter(req => req.status !== 'cancelled').map(req => ({ ...req, type: 'mealRequest' })),
-                    ...myFingerprints.filter(fp => fp.status !== 'cancelled').map(fp => ({ ...fp, type: 'fingerprint' }))
-                ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    // Load initial data
+    loadActivityStats('week');
 
-                // Combine other requests (filter by dorm if available and exclude cancelled)
-                const otherMealRequests = allMealRequests.filter(req => {
-                    if (req.userId === user.id) return false;
-                    if (req.status === 'cancelled' || req.status === 'matched') return false;
-                    if (user.dorm && req.userDorm) {
-                        return req.userDorm === user.dorm;
-                    }
-                    return true; // Show all if dorm info not available
-                }).map(req => ({ ...req, type: 'mealRequest' }));
+    // Load requests
+    async function loadRequests() {
+        try {
+            const [myMealRequests, allMealRequests, myFingerprints, allFingerprints] = await Promise.all([
+                mealRequestService.getMy(),
+                mealRequestService.getAll(),
+                fingerprintService.getMy(),
+                fingerprintService.getAll()
+            ]);
 
-                const otherFingerprints = allFingerprints.filter(fp => {
-                    if (fp.userId === user.id) return false;
-                    if (fp.status === 'cancelled' || fp.status === 'matched') return false;
-                    if (user.dorm && fp.userDorm) {
-                        return fp.userDorm === user.dorm;
-                    }
-                    return true; // Show all if dorm info not available
-                }).map(fp => ({ ...fp, type: 'fingerprint' }));
+            const user = authService.getCurrentUser();
+            // Combine my requests (both meal requests and fingerprints) - filter out cancelled
+            const myRequests = [
+                ...myMealRequests.filter(req => req.status !== 'cancelled').map(req => ({ ...req, type: 'mealRequest' })),
+                ...myFingerprints.filter(fp => fp.status !== 'cancelled').map(fp => ({ ...fp, type: 'fingerprint' }))
+            ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-                const otherRequests = [...otherMealRequests, ...otherFingerprints]
-                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            // Combine other requests (filter by dorm if available and exclude cancelled)
+            const otherMealRequests = allMealRequests.filter(req => {
+                if (req.userId === user.id) return false;
+                if (req.status === 'cancelled' || req.status === 'matched') return false;
+                if (user.dorm && req.userDorm) {
+                    return req.userDorm === user.dorm;
+                }
+                return true; // Show all if dorm info not available
+            }).map(req => ({ ...req, type: 'mealRequest' }));
 
-                renderRequests('myRequests', myRequests, true);
-                renderRequests('otherRequests', otherRequests, false);
-            } catch (error) {
-                console.error('Error loading requests:', error);
-                document.getElementById('myRequests').innerHTML = 
-                    '<p class="text-error">Talepler yüklenemedi</p>';
-                document.getElementById('otherRequests').innerHTML = 
-                    '<p class="text-error">Talepler yüklenemedi</p>';
-            }
+            const otherFingerprints = allFingerprints.filter(fp => {
+                if (fp.userId === user.id) return false;
+                if (fp.status === 'cancelled' || fp.status === 'matched') return false;
+                if (user.dorm && fp.userDorm) {
+                    return fp.userDorm === user.dorm;
+                }
+                return true; // Show all if dorm info not available
+            }).map(fp => ({ ...fp, type: 'fingerprint' }));
+
+            const otherRequests = [...otherMealRequests, ...otherFingerprints]
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            renderRequests('myRequests', myRequests, true);
+            renderRequests('otherRequests', otherRequests, false);
+        } catch (error) {
+            console.error('Error loading requests:', error);
+            document.getElementById('myRequests').innerHTML =
+                '<p class="text-error">Talepler yüklenemedi</p>';
+            document.getElementById('otherRequests').innerHTML =
+                '<p class="text-error">Talepler yüklenemedi</p>';
+        }
+    }
+
+    function renderRequests(containerId, requests, isOwn) {
+        const container = document.getElementById(containerId);
+        if (!requests || requests.length === 0) {
+            container.innerHTML = '<p style="color: var(--text-secondary);">Talep bulunamadı</p>';
+            return;
         }
 
-        function renderRequests(containerId, requests, isOwn) {
-            const container = document.getElementById(containerId);
-            
-            if (!requests || requests.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-secondary);">Talep bulunamadı</p>';
-                return;
-            }
-
-            container.innerHTML = requests.map(request => {
-                const isFingerprint = request.type === 'fingerprint';
-                const isGive = isFingerprint; // Fingerprint = give, MealRequest = take
-                const dateField = isFingerprint ? 'availableDate' : 'preferredDate';
-                const startTimeField = isFingerprint ? 'startTime' : 'preferredStartTime';
-                const endTimeField = isFingerprint ? 'endTime' : 'preferredEndTime';
-                const notesField = isFingerprint ? 'description' : 'notes';
-                const deleteAction = isFingerprint ? 'deleteFingerprint' : 'deleteRequest';
-                
-                return `
-                <div class="card request-card" 
-                     data-user-id="${request.userId}" 
+        container.innerHTML = requests.map(request => {
+            const isFingerprint = request.type === 'fingerprint';
+            const isGive = isFingerprint; // Fingerprint = give, MealRequest = take
+            const dateField = isFingerprint ? 'availableDate' : 'preferredDate';
+            const startTimeField = isFingerprint ? 'startTime' : 'preferredStartTime';
+            const endTimeField = isFingerprint ? 'endTime' : 'preferredEndTime';
+            const notesField = isFingerprint ? 'description' : 'notes';
+            const deleteAction = isFingerprint ? 'deleteFingerprint' : 'deleteRequest';
+            return `
+                <div class="card request-card"
+                     data-user-id="${request.userId}"
                      data-user-name="${(request.userName || '').replace(/"/g, '&quot;')}"
                      data-request-id="${request.id}"
                      data-request-type="${request.type}">
@@ -370,7 +420,7 @@
                         Öğün: ${request.mealType === 'lunch' ? 'Öğle Yemeği' : request.mealType === 'dinner' ? 'Akşam Yemeği' : request.mealType}
                     </p>
                     ${request[dateField] ? `<p style="color: var(--text-secondary); font-size: 0.9rem;">Tarih: ${new Date(request[dateField]).toLocaleDateString('tr-TR')}</p>` : ''}
-                    ${request[startTimeField] && request[endTimeField] ? 
+                    ${request[startTimeField] && request[endTimeField] ?
                         `<p style="color: var(--text-secondary); font-size: 0.9rem;">Saat: ${request[startTimeField]} - ${request[endTimeField]}</p>` : ''}
                     ${request[notesField] ? `<p style="margin-top: 0.5rem;">${request[notesField]}</p>` : ''}
                     <p style="color: var(--text-tertiary); font-size: 0.85rem; margin-top: 0.5rem;">
@@ -379,174 +429,168 @@
                     ${isOwn ? `<button class="btn btn-danger btn-sm mt-2 delete-request-btn" data-request-id="${request.id}" data-request-type="${request.type}">Sil</button>` : ''}
                 </div>
             `;
-            }).join('');
-        }
+        }).join('');
+    }
 
-        // Modal functions
-        function openCreateModal(type) {
-            document.getElementById('requestType').value = type;
-            const modalTitle = type === 'give' ? 'Verme' : 'Alma';
-            document.getElementById('modalTitle').textContent = `${modalTitle} Talebi Oluştur`;
-            document.getElementById('createModal').classList.remove('hidden');
-        }
+    // Modal functions
+    function openCreateModal(type) {
+        document.getElementById('requestType').value = type;
+        const modalTitle = type === 'give' ? 'Verme' : 'Alma';
+        document.getElementById('modalTitle').textContent = `${modalTitle} Talebi Oluştur`;
+        document.getElementById('createModal').classList.remove('hidden');
+    }
 
-        function closeCreateModal() {
-            document.getElementById('createModal').classList.add('hidden');
-            document.getElementById('createRequestForm').reset();
-            document.getElementById('createError').classList.add('hidden');
-            const submitBtn = document.getElementById('submitCreateBtn');
+    function closeCreateModal() {
+        document.getElementById('createModal').classList.add('hidden');
+        document.getElementById('createRequestForm').reset();
+        document.getElementById('createError').classList.add('hidden');
+        const submitBtn = document.getElementById('submitCreateBtn');
+        submitBtn.disabled = false;
+        submitBtn.querySelector('.btn-text').classList.remove('hidden');
+        submitBtn.querySelector('.btn-loading').classList.add('hidden');
+    }
+
+    function openChat(userId, userName, requestId = null, requestType = null) {
+        let url = `/Chat?userId=${userId}&userName=${encodeURIComponent(userName)}`;
+        if (requestId && requestType) {
+            url += `&requestId=${requestId}&requestType=${requestType}`;
+        }
+        window.location.href = url;
+    }
+
+    async function deleteRequest(id) {
+        if (!confirm('Bu talebi silmek istediğinizden emin misiniz?')) return;
+        try {
+            await mealRequestService.delete(id);
+            loadRequests();
+        } catch (error) {
+            alert('Talep silinemedi: ' + error.message);
+        }
+    }
+
+    async function deleteFingerprint(id) {
+        if (!confirm('Bu parmak izini silmek istediğinizden emin misiniz?')) return;
+        try {
+            await fingerprintService.delete(id);
+            loadRequests();
+        } catch (error) {
+            alert('Parmak izi silinemedi: ' + error.message);
+        }
+    }
+
+    // Event listeners for buttons
+    document.getElementById('createGiveBtn').addEventListener('click', () => {
+        openCreateModal('give');
+    });
+
+    document.getElementById('createTakeBtn').addEventListener('click', () => {
+        openCreateModal('take');
+    });
+
+    document.getElementById('closeCreateModalBtn').addEventListener('click', closeCreateModal);
+    document.getElementById('cancelCreateModalBtn').addEventListener('click', closeCreateModal);
+
+    // Create request handler
+    document.getElementById('createRequestForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const errorDiv = document.getElementById('createError');
+        const submitBtn = document.getElementById('submitCreateBtn');
+        const btnText = submitBtn.querySelector('.btn-text');
+        const btnLoading = submitBtn.querySelector('.btn-loading');
+        errorDiv.classList.add('hidden');
+        submitBtn.disabled = true;
+        btnText.classList.add('hidden');
+        btnLoading.classList.remove('hidden');
+
+        const requestType = document.getElementById('requestType').value; // 'give' or 'take'
+        const mealType = document.getElementById('mealType').value;
+        const preferredDate = document.getElementById('preferredDate').value || null;
+        const preferredStartTime = document.getElementById('preferredStartTime').value || null;
+        const preferredEndTime = document.getElementById('preferredEndTime').value || null;
+        const notes = document.getElementById('notes').value.trim() || null;
+
+        // Validation
+        if (!mealType) {
+            errorDiv.textContent = 'Lütfen öğün türü seçiniz';
+            errorDiv.classList.remove('hidden');
             submitBtn.disabled = false;
-            submitBtn.querySelector('.btn-text').classList.remove('hidden');
-            submitBtn.querySelector('.btn-loading').classList.add('hidden');
+            btnText.classList.remove('hidden');
+            btnLoading.classList.add('hidden');
+            return;
         }
 
-        function openChat(userId, userName, requestId = null, requestType = null) {
-            let url = `/Chat?userId=${userId}&userName=${encodeURIComponent(userName)}`;
-            if (requestId && requestType) {
-                url += `&requestId=${requestId}&requestType=${requestType}`;
+        try {
+            // Convert time format from HH:mm to HH:mm:ss for TimeSpan
+            const startTime = preferredStartTime ? `${preferredStartTime}:00` : null;
+            const endTime = preferredEndTime ? `${preferredEndTime}:00` : null;
+            if (requestType === 'give') {
+                // Create fingerprint (giving meal)
+                await fingerprintService.create(
+                    mealType,
+                    preferredDate,
+                    startTime,
+                    endTime,
+                    notes
+                );
+            } else {
+                // Create meal request (taking meal)
+                await mealRequestService.create(
+                    mealType,
+                    preferredDate,
+                    startTime,
+                    endTime,
+                    notes
+                );
             }
-            window.location.href = url;
+            closeCreateModal();
+            loadRequests();
+        } catch (error) {
+            errorDiv.textContent = error.message || 'Talep oluşturulamadı';
+            errorDiv.classList.remove('hidden');
+        } finally {
+            submitBtn.disabled = false;
+            btnText.classList.remove('hidden');
+            btnLoading.classList.add('hidden');
+        }
+    });
+
+    // Close modal on overlay click
+    document.getElementById('createModal').addEventListener('click', (e) => {
+        if (e.target.id === 'createModal') {
+            closeCreateModal();
+        }
+    });
+
+    // Event delegation for dynamic content
+    document.addEventListener('click', (e) => {
+        // Handle request card click (open chat)
+        const requestCard = e.target.closest('.request-card');
+        if (requestCard && !e.target.closest('.delete-request-btn')) {
+            const userId = requestCard.dataset.userId;
+            const userName = requestCard.dataset.userName;
+            const requestId = requestCard.dataset.requestId;
+            const requestType = requestCard.dataset.requestType;
+            if (userId && userName) {
+                openChat(userId, userName, requestId, requestType);
+            }
         }
 
-        async function deleteRequest(id) {
-            if (!confirm('Bu talebi silmek istediğinizden emin misiniz?')) return;
-            
-            try {
-                await mealRequestService.delete(id);
-                loadRequests();
-            } catch (error) {
-                alert('Talep silinemedi: ' + error.message);
-            }
-        }
-
-        async function deleteFingerprint(id) {
-            if (!confirm('Bu parmak izini silmek istediğinizden emin misiniz?')) return;
-            
-            try {
-                await fingerprintService.delete(id);
-                loadRequests();
-            } catch (error) {
-                alert('Parmak izi silinemedi: ' + error.message);
-            }
-        }
-
-        // Event listeners for buttons
-        document.getElementById('createGiveBtn').addEventListener('click', () => {
-            openCreateModal('give');
-        });
-
-        document.getElementById('createTakeBtn').addEventListener('click', () => {
-            openCreateModal('take');
-        });
-
-        document.getElementById('closeCreateModalBtn').addEventListener('click', closeCreateModal);
-        document.getElementById('cancelCreateModalBtn').addEventListener('click', closeCreateModal);
-
-        // Create request handler
-        document.getElementById('createRequestForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const errorDiv = document.getElementById('createError');
-            const submitBtn = document.getElementById('submitCreateBtn');
-            const btnText = submitBtn.querySelector('.btn-text');
-            const btnLoading = submitBtn.querySelector('.btn-loading');
-            
-            errorDiv.classList.add('hidden');
-            submitBtn.disabled = true;
-            btnText.classList.add('hidden');
-            btnLoading.classList.remove('hidden');
-
-            const requestType = document.getElementById('requestType').value; // 'give' or 'take'
-            const mealType = document.getElementById('mealType').value;
-            const preferredDate = document.getElementById('preferredDate').value || null;
-            const preferredStartTime = document.getElementById('preferredStartTime').value || null;
-            const preferredEndTime = document.getElementById('preferredEndTime').value || null;
-            const notes = document.getElementById('notes').value.trim() || null;
-
-            // Validation
-            if (!mealType) {
-                errorDiv.textContent = 'Lütfen öğün türü seçiniz';
-                errorDiv.classList.remove('hidden');
-                submitBtn.disabled = false;
-                btnText.classList.remove('hidden');
-                btnLoading.classList.add('hidden');
-                return;
-            }
-
-            try {
-                // Convert time format from HH:mm to HH:mm:ss for TimeSpan
-                const startTime = preferredStartTime ? `${preferredStartTime}:00` : null;
-                const endTime = preferredEndTime ? `${preferredEndTime}:00` : null;
-                
-                if (requestType === 'give') {
-                    // Create fingerprint (giving meal)
-                    await fingerprintService.create(
-                        mealType,
-                        preferredDate,
-                        startTime,
-                        endTime,
-                        notes
-                    );
+        // Handle delete request button
+        if (e.target.classList.contains('delete-request-btn')) {
+            e.stopPropagation();
+            const requestId = e.target.dataset.requestId;
+            const requestType = e.target.dataset.requestType;
+            if (requestId) {
+                if (requestType === 'fingerprint') {
+                    deleteFingerprint(requestId);
                 } else {
-                    // Create meal request (taking meal)
-                    await mealRequestService.create(
-                        mealType,
-                        preferredDate,
-                        startTime,
-                        endTime,
-                        notes
-                    );
-                }
-                
-                closeCreateModal();
-                loadRequests();
-            } catch (error) {
-                errorDiv.textContent = error.message || 'Talep oluşturulamadı';
-                errorDiv.classList.remove('hidden');
-            } finally {
-                submitBtn.disabled = false;
-                btnText.classList.remove('hidden');
-                btnLoading.classList.add('hidden');
-            }
-        });
-
-        // Close modal on overlay click
-        document.getElementById('createModal').addEventListener('click', (e) => {
-            if (e.target.id === 'createModal') {
-                closeCreateModal();
-            }
-        });
-
-        // Event delegation for dynamic content
-        document.addEventListener('click', (e) => {
-            // Handle request card click (open chat)
-            const requestCard = e.target.closest('.request-card');
-            if (requestCard && !e.target.closest('.delete-request-btn')) {
-                const userId = requestCard.dataset.userId;
-                const userName = requestCard.dataset.userName;
-                const requestId = requestCard.dataset.requestId;
-                const requestType = requestCard.dataset.requestType;
-                if (userId && userName) {
-                    openChat(userId, userName, requestId, requestType);
+                    deleteRequest(requestId);
                 }
             }
+        }
+    });
 
-            // Handle delete request button
-            if (e.target.classList.contains('delete-request-btn')) {
-                e.stopPropagation();
-                const requestId = e.target.dataset.requestId;
-                const requestType = e.target.dataset.requestType;
-                if (requestId) {
-                    if (requestType === 'fingerprint') {
-                        deleteFingerprint(requestId);
-                    } else {
-                        deleteRequest(requestId);
-                    }
-                }
-            }
-        });
-
-        // Load initial data
-        loadRequests();
-    </script>
+    // Load initial data
+    loadRequests();
+</script>
 }
-
