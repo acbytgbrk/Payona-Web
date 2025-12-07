@@ -4,12 +4,23 @@
     ViewData["Title"] = "Ana Sayfa - Payona";
 }
 
+<!-- İcon Kütüphanesi (Remix Icon) -->
+<link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
 <div>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <h1>Ana Sayfa</h1>
+        <!-- Kullanıcı Adı Güncellemesi (ID eklendi ve JS ile doldurulacak) -->
+        <h1>Hoşgeldin, <span id="welcomeName">@(User.Identity?.Name ?? "Öğrenci")</span> 👋</h1>
+        
         <div class="flex gap-2">
-            <button class="btn btn-primary" id="createGiveBtn" data-type="give">Verme Talebi Oluştur</button>
-            <button class="btn btn-secondary" id="createTakeBtn" data-type="take">Alma Talebi Oluştur</button>
+            <!-- Verme Butonu İconu -->
+            <button class="btn btn-primary" id="createGiveBtn" data-type="give" style="display: flex; align-items: center; gap: 8px;">
+                <i class="ri-hand-heart-fill"></i> Verme Talebi Oluştur
+            </button>
+            <!-- Alma Butonu İconu -->
+            <button class="btn btn-secondary" id="createTakeBtn" data-type="take" style="display: flex; align-items: center; gap: 8px;">
+                <i class="ri-restaurant-fill"></i> Alma Talebi Oluştur
+            </button>
         </div>
     </div>
 
@@ -43,7 +54,10 @@
 
     <!-- My Requests Section -->
     <section class="mb-4">
-        <h2 style="margin-bottom: 1rem;">Taleplerim</h2>
+        <!-- Taleplerim İconu -->
+        <h2 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;">
+            <i class="ri-user-star-line" style="color: var(--accent-primary);"></i> Taleplerim
+        </h2>
         <div id="myRequests" class="grid grid-cols-1 gap-4">
             <div class="text-center" style="padding: 2rem; color: var(--text-secondary);">
                 <div class="spinner" style="margin: 0 auto;"></div>
@@ -54,7 +68,10 @@
 
     <!-- Other Students' Requests Section -->
     <section>
-        <h2 style="margin-bottom: 1rem;">Diğer Öğrencilerin Talepleri</h2>
+        <!-- Diğer Talepler İconu -->
+        <h2 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;">
+            <i class="ri-community-line" style="color: var(--accent-secondary);"></i> Diğer Öğrencilerin Talepleri
+        </h2>
         <div id="otherRequests" class="grid grid-cols-1 gap-4">
             <div class="text-center" style="padding: 2rem; color: var(--text-secondary);">
                 <div class="spinner" style="margin: 0 auto;"></div>
@@ -126,14 +143,22 @@
         window.location.href = '/DormInfo';
     }
 
+    // --- KULLANICI ADINI DÜZELTME KODU ---
+    // Eğer JS tarafında kullanıcı ismi varsa, başlıktaki "Öğrenci" yazısını değiştir.
+    if (user && user.name) {
+        const welcomeSpan = document.getElementById('welcomeName');
+        if (welcomeSpan) {
+            welcomeSpan.textContent = user.name;
+        }
+    }
+    // -------------------------------------
+
     let currentPeriod = 'week';
     let activityData = null;
 
-    // --- YENİ EKLENEN KISIM: VERİ GRUPLANDIRMA ---
+    // --- VERİ GRUPLANDIRMA ---
     function aggregateData(dailyStats, period) {
         if (!dailyStats || dailyStats.length === 0) return [];
-        
-        // Gün ve Hafta için olduğu gibi dön
         if (period === 'day' || period === 'week') {
             return dailyStats;
         }
@@ -147,18 +172,14 @@
             let sortDate;
 
             if (period === 'month') {
-                // Ay seçildiyse: Haftalara böl (1., 2. hafta vb.)
                 const dayOfMonth = date.getDate();
                 const weekNum = Math.ceil(dayOfMonth / 7); 
                 key = `week-${weekNum}`;
                 label = `${weekNum}. Hafta`;
-                // Sıralama için o haftanın tahmini başlangıcı
                 sortDate = new Date(date.getFullYear(), date.getMonth(), (weekNum - 1) * 7 + 1);
             } else if (period === 'year') {
-                // Yıl seçildiyse: Aylara böl
                 const monthIndex = date.getMonth();
                 key = `month-${monthIndex}`;
-                // Label drawChart içinde formatlanacak
                 sortDate = new Date(date.getFullYear(), monthIndex, 1);
                 label = sortDate; 
             }
@@ -166,23 +187,20 @@
             if (!groupedData[key]) {
                 groupedData[key] = {
                     date: sortDate, 
-                    labelOverride: period === 'month' ? label : null, // Özel etiket (Ay görünümü için)
+                    labelOverride: period === 'month' ? label : null,
                     requestsCreated: 0,
                     matchesCreated: 0,
                     matchesAccepted: 0
                 };
             }
 
-            // Değerleri topla
             groupedData[key].requestsCreated += stat.requestsCreated;
             groupedData[key].matchesCreated += stat.matchesCreated;
             groupedData[key].matchesAccepted += stat.matchesAccepted;
         });
 
-        // Objeyi array'e çevir ve tarihe göre sırala
         return Object.values(groupedData).sort((a, b) => new Date(a.date) - new Date(b.date));
     }
-    // --- GRUPLANDIRMA BITIŞ ---
 
     // Load activity stats
     async function loadActivityStats(period = 'week') {
@@ -190,10 +208,8 @@
             const stats = await matchService.getActivityStats(period);
             activityData = stats;
             updateStatsDisplay(stats);
-            
-            // Veriyi işle (Gruplandır)
             const processedData = aggregateData(stats.dailyStats, period);
-            drawChart(processedData, period);
+            drawChart(processedData, period); 
         } catch (error) {
             console.error('Error loading activity stats:', error);
         }
@@ -209,11 +225,9 @@
     function initCanvas() {
         const canvas = document.getElementById('activityCanvas');
         const ctx = canvas.getContext('2d');
-        // Set canvas size
         canvas.width = canvas.offsetWidth;
         canvas.height = 200;
 
-        // Draw activity chart
         window.drawChart = function(dailyStats, period) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             if (!dailyStats || dailyStats.length === 0) {
@@ -227,7 +241,7 @@
             const padding = 40;
             const chartWidth = canvas.width - padding * 2;
             const chartHeight = canvas.height - padding * 2;
-            // Draw grid
+            
             ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-color');
             ctx.lineWidth = 1;
             const dataPoints = dailyStats.length;
@@ -235,7 +249,7 @@
                 ...dailyStats.map(d => d.requestsCreated + d.matchesCreated + d.matchesAccepted),
                 1
             );
-            // Horizontal lines
+            
             for (let i = 0; i <= 5; i++) {
                 const y = padding + (chartHeight / 5) * i;
                 ctx.beginPath();
@@ -243,7 +257,7 @@
                 ctx.lineTo(canvas.width - padding, y);
                 ctx.stroke();
             }
-            // Vertical lines
+            
             for (let i = 0; i <= dataPoints; i++) {
                 const x = padding + (chartWidth / dataPoints) * i;
                 ctx.beginPath();
@@ -251,33 +265,33 @@
                 ctx.lineTo(x, canvas.height - padding);
                 ctx.stroke();
             }
-            // Draw bars
+            
             const barWidth = chartWidth / dataPoints - 5;
             const colors = {
                 requests: getComputedStyle(document.documentElement).getPropertyValue('--accent-primary'),
                 matches: getComputedStyle(document.documentElement).getPropertyValue('--accent-secondary'),
                 accepted: getComputedStyle(document.documentElement).getPropertyValue('--accent-secondary')
             };
+
             dailyStats.forEach((day, index) => {
                 const x = padding + (chartWidth / dataPoints) * index + 2.5;
                 const total = day.requestsCreated + day.matchesCreated + day.matchesAccepted;
-                // Stacked bars
                 let currentY = canvas.height - padding;
-                // Requests created (bottom)
+                
                 if (day.requestsCreated > 0) {
                     const height = (day.requestsCreated / maxValue) * chartHeight;
                     ctx.fillStyle = colors.requests;
                     ctx.fillRect(x, currentY - height, barWidth, height);
                     currentY -= height;
                 }
-                // Matches created (middle)
+                
                 if (day.matchesCreated > 0) {
                     const height = (day.matchesCreated / maxValue) * chartHeight;
                     ctx.fillStyle = colors.matches;
                     ctx.fillRect(x, currentY - height, barWidth, height);
                     currentY -= height;
                 }
-                // Matches accepted (top)
+                
                 if (day.matchesAccepted > 0) {
                     const height = (day.matchesAccepted / maxValue) * chartHeight;
                     ctx.fillStyle = colors.accepted;
@@ -287,18 +301,14 @@
                 }
             });
             
-            // Draw labels
             ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary');
             ctx.font = '11px sans-serif';
             ctx.textAlign = 'center';
             dailyStats.forEach((day, index) => {
-                // Etiketleri çubukların tam ortasına koy
                 const x = padding + (chartWidth / dataPoints) * index + (chartWidth / dataPoints) / 2;
-                
                 const date = new Date(day.date);
                 let label = '';
 
-                // Eğer aggregateData fonksiyonundan özel bir label gelmişse onu kullan
                 if (day.labelOverride) {
                     label = day.labelOverride;
                 } else {
@@ -307,20 +317,16 @@
                     } else if (period === 'week') {
                         label = date.toLocaleDateString('tr-TR', { weekday: 'short' });
                     } else if (period === 'year') {
-                        // Yıl görünümünde sadece Ay ismini yaz
                         label = date.toLocaleDateString('tr-TR', { month: 'short' });
                     }
                 }
-                
                 ctx.fillText(label, x, canvas.height - 10);
             });
         };
         
-        // Redraw on resize
         window.addEventListener('resize', () => {
             canvas.width = canvas.offsetWidth;
             if (activityData) {
-                // Resize sırasında da aggregation yapmalıyız
                 const processedData = aggregateData(activityData.dailyStats, currentPeriod);
                 drawChart(processedData, currentPeriod);
             }
@@ -329,16 +335,13 @@
 
     initCanvas();
 
-    // Period selector
     document.getElementById('periodSelect').addEventListener('change', (e) => {
         currentPeriod = e.target.value;
         loadActivityStats(currentPeriod);
     });
 
-    // Load initial data
     loadActivityStats('week');
 
-    // Load requests
     async function loadRequests() {
         try {
             const [myMealRequests, allMealRequests, myFingerprints, allFingerprints] = await Promise.all([
@@ -349,20 +352,18 @@
             ]);
 
             const user = authService.getCurrentUser();
-            // Combine my requests (both meal requests and fingerprints) - filter out cancelled
             const myRequests = [
                 ...myMealRequests.filter(req => req.status !== 'cancelled').map(req => ({ ...req, type: 'mealRequest' })),
                 ...myFingerprints.filter(fp => fp.status !== 'cancelled').map(fp => ({ ...fp, type: 'fingerprint' }))
             ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-            // Combine other requests (filter by dorm if available and exclude cancelled)
             const otherMealRequests = allMealRequests.filter(req => {
                 if (req.userId === user.id) return false;
                 if (req.status === 'cancelled' || req.status === 'matched') return false;
                 if (user.dorm && req.userDorm) {
                     return req.userDorm === user.dorm;
                 }
-                return true; // Show all if dorm info not available
+                return true; 
             }).map(req => ({ ...req, type: 'mealRequest' }));
 
             const otherFingerprints = allFingerprints.filter(fp => {
@@ -371,7 +372,7 @@
                 if (user.dorm && fp.userDorm) {
                     return fp.userDorm === user.dorm;
                 }
-                return true; // Show all if dorm info not available
+                return true; 
             }).map(fp => ({ ...fp, type: 'fingerprint' }));
 
             const otherRequests = [...otherMealRequests, ...otherFingerprints]
@@ -397,12 +398,11 @@
 
         container.innerHTML = requests.map(request => {
             const isFingerprint = request.type === 'fingerprint';
-            const isGive = isFingerprint; // Fingerprint = give, MealRequest = take
+            const isGive = isFingerprint; 
             const dateField = isFingerprint ? 'availableDate' : 'preferredDate';
             const startTimeField = isFingerprint ? 'startTime' : 'preferredStartTime';
             const endTimeField = isFingerprint ? 'endTime' : 'preferredEndTime';
             const notesField = isFingerprint ? 'description' : 'notes';
-            const deleteAction = isFingerprint ? 'deleteFingerprint' : 'deleteRequest';
             return `
                 <div class="card request-card"
                      data-user-id="${request.userId}"
@@ -478,7 +478,6 @@
         }
     }
 
-    // Event listeners for buttons
     document.getElementById('createGiveBtn').addEventListener('click', () => {
         openCreateModal('give');
     });
@@ -490,7 +489,6 @@
     document.getElementById('closeCreateModalBtn').addEventListener('click', closeCreateModal);
     document.getElementById('cancelCreateModalBtn').addEventListener('click', closeCreateModal);
 
-    // Create request handler
     document.getElementById('createRequestForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const errorDiv = document.getElementById('createError');
@@ -502,14 +500,13 @@
         btnText.classList.add('hidden');
         btnLoading.classList.remove('hidden');
 
-        const requestType = document.getElementById('requestType').value; // 'give' or 'take'
+        const requestType = document.getElementById('requestType').value; 
         const mealType = document.getElementById('mealType').value;
         const preferredDate = document.getElementById('preferredDate').value || null;
         const preferredStartTime = document.getElementById('preferredStartTime').value || null;
         const preferredEndTime = document.getElementById('preferredEndTime').value || null;
         const notes = document.getElementById('notes').value.trim() || null;
 
-        // Validation
         if (!mealType) {
             errorDiv.textContent = 'Lütfen öğün türü seçiniz';
             errorDiv.classList.remove('hidden');
@@ -520,27 +517,12 @@
         }
 
         try {
-            // Convert time format from HH:mm to HH:mm:ss for TimeSpan
             const startTime = preferredStartTime ? `${preferredStartTime}:00` : null;
             const endTime = preferredEndTime ? `${preferredEndTime}:00` : null;
             if (requestType === 'give') {
-                // Create fingerprint (giving meal)
-                await fingerprintService.create(
-                    mealType,
-                    preferredDate,
-                    startTime,
-                    endTime,
-                    notes
-                );
+                await fingerprintService.create(mealType, preferredDate, startTime, endTime, notes);
             } else {
-                // Create meal request (taking meal)
-                await mealRequestService.create(
-                    mealType,
-                    preferredDate,
-                    startTime,
-                    endTime,
-                    notes
-                );
+                await mealRequestService.create(mealType, preferredDate, startTime, endTime, notes);
             }
             closeCreateModal();
             loadRequests();
@@ -554,16 +536,13 @@
         }
     });
 
-    // Close modal on overlay click
     document.getElementById('createModal').addEventListener('click', (e) => {
         if (e.target.id === 'createModal') {
             closeCreateModal();
         }
     });
 
-    // Event delegation for dynamic content
     document.addEventListener('click', (e) => {
-        // Handle request card click (open chat)
         const requestCard = e.target.closest('.request-card');
         if (requestCard && !e.target.closest('.delete-request-btn')) {
             const userId = requestCard.dataset.userId;
@@ -575,7 +554,6 @@
             }
         }
 
-        // Handle delete request button
         if (e.target.classList.contains('delete-request-btn')) {
             e.stopPropagation();
             const requestId = e.target.dataset.requestId;
@@ -590,7 +568,6 @@
         }
     });
 
-    // Load initial data
     loadRequests();
 </script>
 }

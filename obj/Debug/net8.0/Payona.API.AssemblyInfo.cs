@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Payona.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+945ec7e19db3f00610889a5dba293358435f8cbb")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7843aa565b330cc97620e24aa9e5c62c8f9d2b1c")]
 [assembly: System.Reflection.AssemblyProductAttribute("Payona.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Payona.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
