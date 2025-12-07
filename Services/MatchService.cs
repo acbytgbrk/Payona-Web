@@ -31,8 +31,20 @@ public class MatchService
         if (fingerprint == null || mealRequest == null)
             return null;
 
-        // Kendi ilanıyla eşleşmesin
-        if (fingerprint.UserId == currentUserId || mealRequest.UserId == currentUserId)
+        // Eşleşme mantığı:
+        // - fingerprint birinin (giver), mealRequest diğerinin (receiver) olmalı
+        // - İkisi de aynı kişiye aitse veya ikisi de başkasına aitse hata
+        // - Biri currentUserId'ye, diğeri başkasına aitse OK
+        
+        bool fingerprintIsMine = fingerprint.UserId == currentUserId;
+        bool mealRequestIsMine = mealRequest.UserId == currentUserId;
+        
+        // Kendi ilanıyla eşleşmesin (ikisi de benim)
+        if (fingerprintIsMine && mealRequestIsMine)
+            return null;
+        
+        // İkisi de başkasına aitse hata (ben eşleşme oluşturamam)
+        if (!fingerprintIsMine && !mealRequestIsMine)
             return null;
 
         var match = new Match
@@ -102,5 +114,106 @@ public class MatchService
         match.Status = status;
         await _context.SaveChangesAsync();
         return true;
+    }
+
+    public async Task<ActivityStatsDto> GetActivityStatsAsync(Guid userId, string period = "week")
+    {
+        var now = DateTime.UtcNow;
+        DateTime startDate;
+
+        switch (period.ToLower())
+        {
+            case "day":
+                startDate = now.Date;
+                break;
+            case "week":
+                startDate = now.Date.AddDays(-7);
+                break;
+            case "month":
+                startDate = now.Date.AddMonths(-1);
+                break;
+            case "year":
+                startDate = now.Date.AddYears(-1);
+                break;
+            default:
+                startDate = now.Date.AddDays(-7);
+                break;
+        }
+
+        // Get user's requests (fingerprints + meal requests)
+        var fingerprints = await _context.Fingerprints
+            .Where(f => f.UserId == userId && f.CreatedAt >= startDate)
+            .ToListAsync();
+
+        var mealRequests = await _context.MealRequests
+            .Where(m => m.UserId == userId && m.CreatedAt >= startDate)
+            .ToListAsync();
+
+        // Get matches where user is giver or receiver
+        var matches = await _context.Matches
+            .Where(m => (m.GiverId == userId || m.ReceiverId == userId) && m.CreatedAt >= startDate)
+            .ToListAsync();
+
+        // Group by date
+        var dailyStats = new Dictionary<DateTime, DailyActivityDto>();
+
+        // Process requests
+        foreach (var fp in fingerprints)
+        {
+            var date = fp.CreatedAt.Date;
+            if (!dailyStats.ContainsKey(date))
+            {
+                dailyStats[date] = new DailyActivityDto { Date = date };
+            }
+            dailyStats[date].RequestsCreated++;
+        }
+
+        foreach (var mr in mealRequests)
+        {
+            var date = mr.CreatedAt.Date;
+            if (!dailyStats.ContainsKey(date))
+            {
+                dailyStats[date] = new DailyActivityDto { Date = date };
+            }
+            dailyStats[date].RequestsCreated++;
+        }
+
+        // Process matches
+        foreach (var match in matches)
+        {
+            var date = match.CreatedAt.Date;
+            if (!dailyStats.ContainsKey(date))
+            {
+                dailyStats[date] = new DailyActivityDto { Date = date };
+            }
+            
+            // If user created the match (is giver or receiver), count as created
+            dailyStats[date].MatchesCreated++;
+            
+            // If user is receiver, it's an accepted match (someone else's request matched with user's request)
+            if (match.ReceiverId == userId)
+            {
+                dailyStats[date].MatchesAccepted++;
+            }
+        }
+
+        // Fill missing dates with zeros
+        var allDates = new List<DateTime>();
+        for (var date = startDate; date <= now.Date; date = date.AddDays(1))
+        {
+            allDates.Add(date);
+            if (!dailyStats.ContainsKey(date))
+            {
+                dailyStats[date] = new DailyActivityDto { Date = date };
+            }
+        }
+
+        return new ActivityStatsDto
+        {
+            DailyStats = allDates.Select(d => dailyStats[d]).OrderBy(d => d.Date).ToList(),
+            TotalRequestsCreated = fingerprints.Count + mealRequests.Count,
+            TotalMatchesAccepted = matches.Count(m => m.ReceiverId == userId),
+            TotalMatchesCreated = matches.Count
+        };
     }
 }

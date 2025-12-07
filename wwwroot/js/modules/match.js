@@ -16,6 +16,10 @@ class MatchService {
   async updateStatus(matchId, status) {
     return apiClient.put(`/matches/${matchId}/status?status=${status}`);
   }
+
+  async getActivityStats(period = 'week') {
+    return apiClient.get(`/matches/activity-stats?period=${period}`);
+  }
 }
 
 export const matchService = new MatchService();

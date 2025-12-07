@@ -196,28 +196,64 @@ public class AuthService
         return (true, "Başarıyla çıkış yapıldı");
     }
 
-    // ✅ Hesap Sil
-    public async Task<(bool Success, string Message)> DeleteAccountAsync(Guid userId, string password)
+   // AuthService.cs içerisindeki DeleteAccountAsync metodu
+public async Task<(bool Success, string Message)> DeleteAccountAsync(Guid userId, string password)
+{
+    var user = await _context.Users.FindAsync(userId);
+
+    if (user == null)
     {
-        var user = await _context.Users.FindAsync(userId);
-
-        if (user == null)
-        {
-            return (false, "Kullanıcı bulunamadı");
-        }
-
-        // ✅ Şifre doğrulaması
-        if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
-        {
-            return (false, "Şifre hatalı");
-        }
-
-        // ✅ Kullanıcıyı sil
-        _context.Users.Remove(user);
-        await _context.SaveChangesAsync();
-
-        return (true, "Hesap başarıyla silindi");
+        return (false, "Kullanıcı bulunamadı");
     }
+
+    // ✅ Şifre doğrulaması
+    if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+    {
+        return (false, "Şifre hatalı");
+    }
+
+    try 
+    {
+        // 1. ADIM: Mesajları Sil (Restrict olduğu için manuel siliyoruz)
+        // Hem gönderilen hem alınan mesajları bul
+        var userMessages = await _context.Messages
+            .Where(m => m.SenderId == userId || m.ReceiverId == userId)
+            .ToListAsync();
+        
+        if (userMessages.Any())
+        {
+            _context.Messages.RemoveRange(userMessages);
+        }
+
+        // 2. ADIM: Eşleşmeleri Sil (Restrict olduğu için manuel siliyoruz)
+        // Hem alan (Receiver) hem veren (Giver) olduğu eşleşmeleri bul
+        var userMatches = await _context.Matches
+            .Where(m => m.GiverId == userId || m.ReceiverId == userId)
+            .ToListAsync();
+
+        if (userMatches.Any())
+        {
+            // Not: Match silindiğinde MatchId'ye bağlı mesajlardaki MatchId null olur (SetNull ayarı yüzünden), 
+            // ama biz yukarıda mesajları zaten sildik.
+            _context.Matches.RemoveRange(userMatches);
+        }
+
+        // 3. ADIM: Kullanıcıyı Sil
+        // Fingerprints, MealRequests ve DormInfo tabloları AppDbContext'te "Cascade" 
+        // ayarlandığı için kullanıcı silinince onlar OTOMATİK silinecektir.
+        _context.Users.Remove(user);
+        
+        await _context.SaveChangesAsync();
+        
+        return (true, "Hesap ve tüm veriler başarıyla silindi");
+    }
+    catch (Exception ex)
+    {
+        // Hatanın detayını görmek için InnerException'a bakıyoruz
+        var msg = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+        return (false, $"Hesap silinirken hata oluştu: {msg}");
+    }
+}
 
     // ✅ Şifre Değiştir
     public async Task<(bool Success, string Message)> ChangePasswordAsync(Guid userId, ChangePasswordRequest request)

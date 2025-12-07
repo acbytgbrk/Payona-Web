@@ -10,7 +10,7 @@
     <div class="app-container">
         <nav class="navbar" id="navbar">
             <div class="navbar-content">
-                <a href="/" class="navbar-brand">🍽️ Payona</a>
+                <a href="/" class="navbar-brand">Payona</a>
                 <div class="navbar-links" id="navbarLinks">
                     <!-- Will be populated by JavaScript -->
                 </div>
@@ -29,6 +29,7 @@
     <script type="module">
         import { authService } from '/js/modules/auth.js';
         import { themeService } from '/js/modules/theme.js';
+        import { chatService } from '/js/modules/chat.js';
 
         // Initialize theme
         themeService.init();
@@ -39,9 +40,31 @@
         const user = authService.getCurrentUser();
         const isAuthenticated = authService.isAuthenticated();
 
+        // Update unread message count
+        async function updateUnreadCount() {
+            try {
+                const count = await chatService.getUnreadCount();
+                const badge = document.getElementById('unreadBadge');
+                if (badge) {
+                    if (count > 0) {
+                        badge.textContent = count > 99 ? '99+' : count;
+                        badge.classList.remove('hidden');
+                    } else {
+                        badge.classList.add('hidden');
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating unread count:', error);
+            }
+        }
+
         if (isAuthenticated && user) {
             navbarLinks.innerHTML = `
                 <a href="/Dashboard" class="nav-link">Ana Sayfa</a>
+                <a href="/Messages" class="nav-link" id="messagesLink" style="position: relative;">
+                    Mesajlar
+                    <span id="unreadBadge" class="unread-badge hidden" style="position: absolute; top: -8px; right: -8px; background: var(--accent-danger); color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold;">0</span>
+                </a>
                 <a href="/Profile" class="nav-link">Profil</a>
                 <button class="theme-toggle btn btn-secondary" id="themeToggle" style="padding: 0.5rem;">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6" style="width: 1.25rem; height: 1.25rem;">
@@ -50,6 +73,11 @@
                 </button>
                 <button class="btn btn-secondary" id="logoutBtn">Çıkış Yap</button>
             `;
+            
+            // Load unread message count
+            updateUnreadCount();
+            // Update every 10 seconds
+            setInterval(updateUnreadCount, 10000);
             
             // Add logout event listener
             document.getElementById('logoutBtn')?.addEventListener('click', async () => {

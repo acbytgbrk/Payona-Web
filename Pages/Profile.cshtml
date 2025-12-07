@@ -89,7 +89,7 @@
         <p style="margin-bottom: 1rem; color: var(--text-secondary);">
             Hesabınızı silmek, tüm verilerinizi kalıcı olarak kaldıracaktır. Bu işlem geri alınamaz.
         </p>
-        <button class="btn btn-danger" onclick="openDeleteModal()">Hesabı Sil</button>
+        <button class="btn btn-danger" id="openDeleteModalBtn">Hesabı Sil</button>
     </div>
 </div>
 
@@ -98,7 +98,7 @@
     <div class="modal">
         <div class="modal-header">
             <h2>Hesabı Sil</h2>
-            <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+            <button class="modal-close" id="closeDeleteModalBtn">&times;</button>
         </div>
         <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">
             Hesap silme işlemini onaylamak için lütfen şifrenizi giriniz.
@@ -111,7 +111,7 @@
             <div id="deleteError" class="text-error hidden mb-2"></div>
             <div class="flex gap-2">
                 <button type="submit" class="btn btn-danger" style="flex: 1;">Hesabı Sil</button>
-                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">İptal</button>
+                <button type="button" class="btn btn-secondary" id="cancelDeleteModalBtn">İptal</button>
             </div>
         </form>
     </div>
@@ -255,7 +255,7 @@
             }
         });
 
-        // Delete account
+        // Delete account functions
         function openDeleteModal() {
             document.getElementById('deleteModal').classList.remove('hidden');
         }
@@ -266,16 +266,35 @@
             document.getElementById('deleteError').classList.add('hidden');
         }
 
+        // Event listeners for delete modal
+        document.getElementById('openDeleteModalBtn').addEventListener('click', openDeleteModal);
+        document.getElementById('closeDeleteModalBtn').addEventListener('click', closeDeleteModal);
+        document.getElementById('cancelDeleteModalBtn').addEventListener('click', closeDeleteModal);
+
         document.getElementById('deleteForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const errorDiv = document.getElementById('deleteError');
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            
             errorDiv.classList.add('hidden');
+            errorDiv.textContent = '';
 
             const password = document.getElementById('deletePassword').value;
+
+            if (!password) {
+                errorDiv.textContent = 'Lütfen şifrenizi giriniz';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
 
             if (!confirm('Hesabınızı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
                 return;
             }
+
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Siliniyor...';
 
             try {
                 await authService.deleteAccount(user.id, password);
@@ -284,6 +303,8 @@
             } catch (error) {
                 errorDiv.textContent = error.message || 'Hesap silinemedi';
                 errorDiv.classList.remove('hidden');
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
             }
         });
 

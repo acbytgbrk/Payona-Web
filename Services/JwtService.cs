@@ -21,6 +21,7 @@ public class JwtService
         var claims = new[]
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()), // ✅ "sub" kullan
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), // ✅ Controller'larda kullanılıyor
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim(JwtRegisteredClaimNames.Name, user.Name),
         };

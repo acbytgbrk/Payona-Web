@@ -21,6 +21,19 @@ class ChatService {
     return apiClient.get('/messages/conversations');
   }
 
+  async getConversationSummaries() {
+    return apiClient.get('/messages/conversations/summaries');
+  }
+
+  async getInboxMessages() {
+    return apiClient.get('/messages/inbox');
+  }
+
+  async getUnreadCount() {
+    const result = await apiClient.get('/messages/unread-count');
+    return result.count || 0;
+  }
+
   startPolling(otherUserId, callback, interval = 2000) {
     let lastMessageId = null;
     

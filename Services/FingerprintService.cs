@@ -20,13 +20,54 @@ public class FingerprintService
 
     public async Task<FingerprintDto> CreateAsync(Guid userId, CreateFingerprintRequest request)
     {
+        // Parse DateTime from string (ensure UTC)
+        DateTime? availableDate = null;
+        if (!string.IsNullOrWhiteSpace(request.AvailableDate))
+        {
+            // HTML date input sends "YYYY-MM-DD" format (date only, no time)
+            // Parse as UTC to avoid timezone issues
+            if (DateTime.TryParseExact(request.AvailableDate, "yyyy-MM-dd", 
+                System.Globalization.CultureInfo.InvariantCulture, 
+                System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal, 
+                out var parsedDate))
+            {
+                availableDate = parsedDate;
+            }
+            else if (DateTime.TryParse(request.AvailableDate, null, System.Globalization.DateTimeStyles.None, out var fallbackDate))
+            {
+                // Fallback: if parse exact fails, use regular parse and ensure UTC
+                availableDate = fallbackDate.Kind == DateTimeKind.Unspecified 
+                    ? DateTime.SpecifyKind(fallbackDate.Date, DateTimeKind.Utc)
+                    : fallbackDate.ToUniversalTime();
+            }
+        }
+
+        // Parse TimeSpan from string
+        TimeSpan? startTime = null;
+        if (!string.IsNullOrWhiteSpace(request.StartTime))
+        {
+            if (TimeSpan.TryParse(request.StartTime, out var parsedStartTime))
+            {
+                startTime = parsedStartTime;
+            }
+        }
+
+        TimeSpan? endTime = null;
+        if (!string.IsNullOrWhiteSpace(request.EndTime))
+        {
+            if (TimeSpan.TryParse(request.EndTime, out var parsedEndTime))
+            {
+                endTime = parsedEndTime;
+            }
+        }
+
         var fingerprint = new Fingerprint
         {
             UserId = userId,
             MealType = request.MealType,
-            AvailableDate = request.AvailableDate,
-            StartTime = request.StartTime,
-            EndTime = request.EndTime,
+            AvailableDate = availableDate,
+            StartTime = startTime,
+            EndTime = endTime,
             Description = request.Description
         };
 
@@ -35,13 +76,15 @@ public class FingerprintService
 
         // Load user for DTO
         await _context.Entry(fingerprint).Reference(f => f.User).LoadAsync();
+        await _context.Entry(fingerprint.User).Reference(u => u.DormInfo).LoadAsync();
 
         return new FingerprintDto
         {
             Id = fingerprint.Id,
             UserId = fingerprint.UserId,
             UserName = fingerprint.User.Name + " " + fingerprint.User.Surname.Substring(0, 1) + ".",
-            UserGender = fingerprint.User.DormInfo.Gender,
+            UserGender = fingerprint.User.DormInfo?.Gender,
+            UserDorm = fingerprint.User.DormInfo?.Dorm,
             MealType = fingerprint.MealType,
             AvailableDate = fingerprint.AvailableDate,
             StartTime = fingerprint.StartTime,
@@ -56,6 +99,7 @@ public class FingerprintService
     {
         var query = _context.Fingerprints
             .Include(f => f.User)
+                .ThenInclude(u => u.DormInfo)
             .Where(f => f.Status == "active");
 
         if (!string.IsNullOrEmpty(mealType))
@@ -72,7 +116,8 @@ public class FingerprintService
             Id = f.Id,
             UserId = f.UserId,
             UserName = f.User.Name + " " + f.User.Surname.Substring(0, 1) + ".",
-            UserGender = f.User.DormInfo.Gender,
+            UserGender = f.User.DormInfo?.Gender,
+            UserDorm = f.User.DormInfo?.Dorm,
             MealType = f.MealType,
             AvailableDate = f.AvailableDate,
             StartTime = f.StartTime,
@@ -87,6 +132,7 @@ public class FingerprintService
     {
         var fingerprints = await _context.Fingerprints
             .Include(f => f.User)
+                .ThenInclude(u => u.DormInfo)
             .Where(f => f.UserId == userId)
             .OrderByDescending(f => f.CreatedAt)
             .ToListAsync();
@@ -96,7 +142,8 @@ public class FingerprintService
             Id = f.Id,
             UserId = f.UserId,
             UserName = f.User.Name + " " + f.User.Surname,
-            UserGender = f.User.DormInfo.Gender,
+            UserGender = f.User.DormInfo?.Gender,
+            UserDorm = f.User.DormInfo?.Dorm,
             MealType = f.MealType,
             AvailableDate = f.AvailableDate,
             StartTime = f.StartTime,

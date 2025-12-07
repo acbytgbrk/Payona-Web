@@ -8,6 +8,7 @@ public class FingerprintDto
     public Guid UserId { get; set; }
     public string UserName { get; set; } = string.Empty;
     public string? UserGender { get; set; }
+    public string? UserDorm { get; set; }
     public string MealType { get; set; } = string.Empty;
     public DateTime? AvailableDate { get; set; }
     public TimeSpan? StartTime { get; set; }
