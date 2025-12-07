@@ -15,7 +15,29 @@
 
     <!-- Canvas Visualization -->
     <div class="card mb-4">
-        <h2 class="card-title mb-2">Aktivite Özeti</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h2 class="card-title mb-0">Aktivite Özeti</h2>
+            <select id="periodSelect" class="form-select" style="width: auto; padding: 0.5rem;">
+                <option value="day">Gün</option>
+                <option value="week" selected>Hafta</option>
+                <option value="month">Ay</option>
+                <option value="year">Yıl</option>
+            </select>
+        </div>
+        <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+            <div style="padding: 0.75rem; background: var(--bg-secondary); border-radius: 0.5rem; flex: 1; min-width: 150px;">
+                <div style="font-size: 0.875rem; color: var(--text-secondary);">Oluşturulan Talep</div>
+                <div style="font-size: 1.5rem; font-weight: bold; color: var(--accent-primary);" id="totalRequestsCreated">0</div>
+            </div>
+            <div style="padding: 0.75rem; background: var(--bg-secondary); border-radius: 0.5rem; flex: 1; min-width: 150px;">
+                <div style="font-size: 0.875rem; color: var(--text-secondary);">Kabul Edilen Eşleşme</div>
+                <div style="font-size: 1.5rem; font-weight: bold; color: var(--accent-secondary);" id="totalMatchesAccepted">0</div>
+            </div>
+            <div style="padding: 0.75rem; background: var(--bg-secondary); border-radius: 0.5rem; flex: 1; min-width: 150px;">
+                <div style="font-size: 0.875rem; color: var(--text-secondary);">Toplam Eşleşme</div>
+                <div style="font-size: 1.5rem; font-weight: bold; color: var(--accent-primary);" id="totalMatchesCreated">0</div>
+            </div>
+        </div>
         <canvas id="activityCanvas" width="800" height="200" style="width: 100%; max-width: 800px; height: 200px; border-radius: 0.5rem; background: var(--bg-secondary);"></canvas>
     </div>
 
@@ -92,6 +114,7 @@
         import { authService } from '/js/modules/auth.js';
         import { mealRequestService } from '/js/modules/mealRequest.js';
         import { fingerprintService } from '/js/modules/fingerprint.js';
+        import { matchService } from '/js/modules/match.js';
 
         // Check authentication
         if (!authService.isAuthenticated()) {
@@ -101,6 +124,27 @@
         const user = authService.getCurrentUser();
         if (authService.requiresDormInfo()) {
             window.location.href = '/DormInfo';
+        }
+
+        let currentPeriod = 'week';
+        let activityData = null;
+
+        // Load activity stats
+        async function loadActivityStats(period = 'week') {
+            try {
+                const stats = await matchService.getActivityStats(period);
+                activityData = stats;
+                updateStatsDisplay(stats);
+                drawChart(stats.dailyStats, period);
+            } catch (error) {
+                console.error('Error loading activity stats:', error);
+            }
+        }
+
+        function updateStatsDisplay(stats) {
+            document.getElementById('totalRequestsCreated').textContent = stats.totalRequestsCreated || 0;
+            document.getElementById('totalMatchesAccepted').textContent = stats.totalMatchesAccepted || 0;
+            document.getElementById('totalMatchesCreated').textContent = stats.totalMatchesCreated || 0;
         }
 
         // Initialize Canvas
@@ -113,9 +157,17 @@
             canvas.height = 200;
 
             // Draw activity chart
-            function drawChart() {
+            window.drawChart = function(dailyStats, period) {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 
+                if (!dailyStats || dailyStats.length === 0) {
+                    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary');
+                    ctx.font = '14px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Henüz veri yok', canvas.width / 2, canvas.height / 2);
+                    return;
+                }
+
                 const padding = 40;
                 const chartWidth = canvas.width - padding * 2;
                 const chartHeight = canvas.height - padding * 2;
@@ -123,6 +175,12 @@
                 // Draw grid
                 ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-color');
                 ctx.lineWidth = 1;
+                
+                const dataPoints = dailyStats.length;
+                const maxValue = Math.max(
+                    ...dailyStats.map(d => d.requestsCreated + d.matchesCreated + d.matchesAccepted),
+                    1
+                );
                 
                 // Horizontal lines
                 for (let i = 0; i <= 5; i++) {
@@ -134,56 +192,98 @@
                 }
                 
                 // Vertical lines
-                for (let i = 0; i <= 7; i++) {
-                    const x = padding + (chartWidth / 7) * i;
+                for (let i = 0; i <= dataPoints; i++) {
+                    const x = padding + (chartWidth / dataPoints) * i;
                     ctx.beginPath();
                     ctx.moveTo(x, padding);
                     ctx.lineTo(x, canvas.height - padding);
                     ctx.stroke();
                 }
                 
-                // Draw sample data (simulated activity)
-                const data = [12, 19, 15, 25, 22, 18, 20];
-                const maxValue = Math.max(...data);
-                const barWidth = chartWidth / 7 - 10;
+                // Draw bars
+                const barWidth = chartWidth / dataPoints - 5;
+                const colors = {
+                    requests: getComputedStyle(document.documentElement).getPropertyValue('--accent-primary'),
+                    matches: getComputedStyle(document.documentElement).getPropertyValue('--accent-secondary'),
+                    accepted: getComputedStyle(document.documentElement).getPropertyValue('--accent-secondary')
+                };
                 
-                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent-primary');
-                
-                data.forEach((value, index) => {
-                    const barHeight = (value / maxValue) * chartHeight;
-                    const x = padding + (chartWidth / 7) * index + 5;
-                    const y = canvas.height - padding - barHeight;
+                dailyStats.forEach((day, index) => {
+                    const x = padding + (chartWidth / dataPoints) * index + 2.5;
+                    const total = day.requestsCreated + day.matchesCreated + day.matchesAccepted;
                     
-                    ctx.fillRect(x, y, barWidth, barHeight);
+                    // Stacked bars
+                    let currentY = canvas.height - padding;
                     
-                    // Add animation
-                    ctx.save();
-                    ctx.globalAlpha = 0.8;
-                    ctx.fillRect(x, y, barWidth, barHeight);
-                    ctx.restore();
+                    // Requests created (bottom)
+                    if (day.requestsCreated > 0) {
+                        const height = (day.requestsCreated / maxValue) * chartHeight;
+                        ctx.fillStyle = colors.requests;
+                        ctx.fillRect(x, currentY - height, barWidth, height);
+                        currentY -= height;
+                    }
+                    
+                    // Matches created (middle)
+                    if (day.matchesCreated > 0) {
+                        const height = (day.matchesCreated / maxValue) * chartHeight;
+                        ctx.fillStyle = colors.matches;
+                        ctx.fillRect(x, currentY - height, barWidth, height);
+                        currentY -= height;
+                    }
+                    
+                    // Matches accepted (top)
+                    if (day.matchesAccepted > 0) {
+                        const height = (day.matchesAccepted / maxValue) * chartHeight;
+                        ctx.fillStyle = colors.accepted;
+                        ctx.globalAlpha = 0.7;
+                        ctx.fillRect(x, currentY - height, barWidth, height);
+                        ctx.globalAlpha = 1.0;
+                    }
                 });
                 
                 // Draw labels
                 ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary');
-                ctx.font = '12px sans-serif';
+                ctx.font = '11px sans-serif';
                 ctx.textAlign = 'center';
-                const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-                days.forEach((day, index) => {
-                    const x = padding + (chartWidth / 7) * index + chartWidth / 14;
-                    ctx.fillText(day, x, canvas.height - 10);
+                
+                dailyStats.forEach((day, index) => {
+                    const x = padding + (chartWidth / dataPoints) * index + chartWidth / (dataPoints * 2);
+                    const date = new Date(day.date);
+                    let label = '';
+                    
+                    if (period === 'day') {
+                        label = date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+                    } else if (period === 'week') {
+                        label = date.toLocaleDateString('tr-TR', { weekday: 'short' });
+                    } else if (period === 'month') {
+                        label = date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+                    } else if (period === 'year') {
+                        label = date.toLocaleDateString('tr-TR', { month: 'short' });
+                    }
+                    
+                    ctx.fillText(label, x, canvas.height - 10);
                 });
-            }
-            
-            drawChart();
+            };
             
             // Redraw on resize
             window.addEventListener('resize', () => {
                 canvas.width = canvas.offsetWidth;
-                drawChart();
+                if (activityData) {
+                    drawChart(activityData.dailyStats, currentPeriod);
+                }
             });
         }
 
         initCanvas();
+
+        // Period selector
+        document.getElementById('periodSelect').addEventListener('change', (e) => {
+            currentPeriod = e.target.value;
+            loadActivityStats(currentPeriod);
+        });
+
+        // Load initial data
+        loadActivityStats('week');
 
         // Load requests
         async function loadRequests() {
@@ -197,15 +297,16 @@
 
                 const user = authService.getCurrentUser();
                 
-                // Combine my requests (both meal requests and fingerprints)
+                // Combine my requests (both meal requests and fingerprints) - filter out cancelled
                 const myRequests = [
-                    ...myMealRequests.map(req => ({ ...req, type: 'mealRequest' })),
-                    ...myFingerprints.map(fp => ({ ...fp, type: 'fingerprint' }))
+                    ...myMealRequests.filter(req => req.status !== 'cancelled').map(req => ({ ...req, type: 'mealRequest' })),
+                    ...myFingerprints.filter(fp => fp.status !== 'cancelled').map(fp => ({ ...fp, type: 'fingerprint' }))
                 ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-                // Combine other requests (filter by dorm if available)
+                // Combine other requests (filter by dorm if available and exclude cancelled)
                 const otherMealRequests = allMealRequests.filter(req => {
                     if (req.userId === user.id) return false;
+                    if (req.status === 'cancelled' || req.status === 'matched') return false;
                     if (user.dorm && req.userDorm) {
                         return req.userDorm === user.dorm;
                     }
@@ -214,6 +315,7 @@
 
                 const otherFingerprints = allFingerprints.filter(fp => {
                     if (fp.userId === user.id) return false;
+                    if (fp.status === 'cancelled' || fp.status === 'matched') return false;
                     if (user.dorm && fp.userDorm) {
                         return fp.userDorm === user.dorm;
                     }

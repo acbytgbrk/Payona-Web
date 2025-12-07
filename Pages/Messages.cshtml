@@ -1,0 +1,111 @@
+@page
+@model MessagesModel
+@{
+    ViewData["Title"] = "Mesajlar - Payona";
+}
+
+<div style="max-width: 900px; margin: 0 auto;">
+    <h1 style="margin-bottom: 2rem;">Mesajlar</h1>
+
+    <div id="conversationsContainer" class="grid grid-cols-1 gap-2">
+        <div class="text-center" style="padding: 2rem; color: var(--text-secondary);">
+            <div class="spinner" style="margin: 0 auto;"></div>
+            <p class="mt-2">Mesajlar yükleniyor...</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="module">
+        import { authService } from '/js/modules/auth.js';
+        import { chatService } from '/js/modules/chat.js';
+
+        // Check authentication
+        if (!authService.isAuthenticated()) {
+            window.location.href = '/';
+        }
+
+        const currentUser = authService.getCurrentUser();
+
+        async function loadConversations() {
+            try {
+                const conversations = await chatService.getConversationSummaries();
+                renderConversations(conversations);
+            } catch (error) {
+                console.error('Error loading conversations:', error);
+                document.getElementById('conversationsContainer').innerHTML = 
+                    '<p class="text-error">Mesajlar yüklenemedi</p>';
+            }
+        }
+
+        function renderConversations(conversations) {
+            const container = document.getElementById('conversationsContainer');
+            
+            if (!conversations || conversations.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">Henüz mesajınız yok.</p>';
+                return;
+            }
+
+            container.innerHTML = conversations.map(conv => {
+                const hasUnread = conv.unreadCount > 0;
+                const timeAgo = conv.lastMessageTime ? getTimeAgo(new Date(conv.lastMessageTime)) : '';
+                const escapedUserName = conv.userName.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const lastMessagePreview = conv.lastMessage 
+                    ? (conv.lastMessage.length > 60 ? conv.lastMessage.substring(0, 60) + '...' : conv.lastMessage)
+                    : '';
+                const lastMessagePrefix = conv.isLastMessageFromMe ? 'Sen: ' : '';
+                
+                return `
+                    <div class="card conversation-item ${hasUnread ? 'unread' : ''}" 
+                         style="cursor: pointer; padding: 1rem; ${hasUnread ? 'border-left: 4px solid var(--accent-primary); background-color: var(--bg-secondary);' : ''}"
+                         onclick="openChat('${conv.userId}', '${escapedUserName}')">
+                        <div class="flex justify-between items-start" style="gap: 1rem;">
+                            <div style="flex: 1; min-width: 0;">
+                                <div class="flex justify-between items-center mb-1">
+                                    <h3 style="margin: 0; font-weight: 600; ${hasUnread ? 'color: var(--accent-primary);' : 'color: var(--text-primary);'}; font-size: 1rem;">
+                                        ${conv.userName}
+                                    </h3>
+                                    ${timeAgo ? `<span style="color: var(--text-secondary); font-size: 0.75rem; white-space: nowrap; margin-left: 0.5rem;">${timeAgo}</span>` : ''}
+                                </div>
+                                <div class="flex justify-between items-center" style="gap: 0.5rem;">
+                                    <p style="margin: 0; color: ${hasUnread ? 'var(--text-primary)' : 'var(--text-secondary)'}; font-size: 0.875rem; ${hasUnread ? 'font-weight: 500;' : ''}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
+                                        ${lastMessagePrefix}${lastMessagePreview}
+                                    </p>
+                                    ${hasUnread ? `<span class="badge badge-primary" style="flex-shrink: 0;">${conv.unreadCount > 99 ? '99+' : conv.unreadCount}</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'Az önce';
+            if (diffMins < 60) return `${diffMins} dakika önce`;
+            if (diffHours < 24) return `${diffHours} saat önce`;
+            if (diffDays < 7) return `${diffDays} gün önce`;
+            return date.toLocaleDateString('tr-TR');
+        }
+
+        function openChat(userId, userName) {
+            window.location.href = `/Chat?userId=${userId}&userName=${encodeURIComponent(userName)}`;
+        }
+
+        // Make openChat available globally
+        window.openChat = openChat;
+
+        // Load conversations
+        loadConversations();
+
+        // Poll for new messages every 5 seconds
+        setInterval(loadConversations, 5000);
+    </script>
+}
+

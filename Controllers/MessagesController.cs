@@ -76,4 +76,28 @@ public class MessagesController : ControllerBase
         var result = await _messageService.GetConversationListAsync(userId);
         return Ok(result);
     }
+
+    [HttpGet("conversations/summaries")]
+    public async Task<IActionResult> GetConversationSummaries()
+    {
+        var userId = GetUserId();
+        var result = await _messageService.GetConversationSummariesAsync(userId);
+        return Ok(result);
+    }
+
+    [HttpGet("inbox")]
+    public async Task<IActionResult> GetInboxMessages()
+    {
+        var userId = GetUserId();
+        var result = await _messageService.GetInboxMessagesAsync(userId);
+        return Ok(result);
+    }
+
+    [HttpGet("unread-count")]
+    public async Task<IActionResult> GetUnreadCount()
+    {
+        var userId = GetUserId();
+        var count = await _messageService.GetUnreadMessageCountAsync(userId);
+        return Ok(new { count });
+    }
 }

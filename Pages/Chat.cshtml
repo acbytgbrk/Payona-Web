@@ -129,6 +129,7 @@
                     fingerprintService.getMy(),
                     mealRequestService.getMy()
                 ]);
+                // Filter only active requests (exclude cancelled and matched)
                 myFingerprints = fingerprints.filter(f => f.status === 'active');
                 myMealRequests = mealRequests.filter(m => m.status === 'active');
             } catch (error) {
@@ -194,7 +195,7 @@
                         // I have a fingerprint, need other user's meal request
                         fingerprintId = requestId;
                         const myFingerprint = myFingerprints.find(f => f.id === fingerprintId);
-                        if (myFingerprint) {
+                        if (myFingerprint && myFingerprint.status === 'active') {
                             const otherMealRequests = await mealRequestService.getAll();
                             const matchingRequest = otherMealRequests.find(m => 
                                 m.userId === otherUserId && 
@@ -209,7 +210,7 @@
                         // I have a meal request, need other user's fingerprint
                         mealRequestId = requestId;
                         const myMealRequest = myMealRequests.find(m => m.id === mealRequestId);
-                        if (myMealRequest) {
+                        if (myMealRequest && myMealRequest.status === 'active') {
                             const otherFingerprints = await fingerprintService.getAll();
                             const matchingFingerprint = otherFingerprints.find(f => 
                                 f.userId === otherUserId && 
@@ -236,6 +237,7 @@
                     // Case 1: I have fingerprint, other has meal request
                     if (myFingerprints.length > 0 && otherActiveMealRequests.length > 0) {
                         const myFingerprint = myFingerprints.find(f => 
+                            f.status === 'active' &&
                             otherActiveMealRequests.some(m => m.mealType === f.mealType)
                         );
                         if (myFingerprint) {
@@ -252,6 +254,7 @@
                     // Case 2: I have meal request, other has fingerprint
                     if (!fingerprintId && myMealRequests.length > 0 && otherActiveFingerprints.length > 0) {
                         const myMealRequest = myMealRequests.find(m => 
+                            m.status === 'active' &&
                             otherActiveFingerprints.some(f => f.mealType === m.mealType)
                         );
                         if (myMealRequest) {
@@ -266,11 +269,102 @@
                     }
                 }
 
+                // If missing, create automatically
                 if (!fingerprintId || !mealRequestId) {
-                    alert('Eşleşme oluşturmak için aktif bir parmak izi ve yemek talebi gerekiyor. Lütfen ana sayfadan ilgili talepleri oluşturun.');
-                    sendBtn.disabled = false;
-                    sendBtn.textContent = originalText;
-                    return;
+                    // Get other user's active requests
+                    const otherMealRequests = await mealRequestService.getAll();
+                    const otherFingerprints = await fingerprintService.getAll();
+                    
+                    const otherActiveMealRequests = otherMealRequests.filter(m => 
+                        m.userId === otherUserId && m.status === 'active'
+                    );
+                    const otherActiveFingerprints = otherFingerprints.filter(f => 
+                        f.userId === otherUserId && f.status === 'active'
+                    );
+                    
+                    // Case 1: Other has meal request, I need fingerprint
+                    if (otherActiveMealRequests.length > 0 && !fingerprintId) {
+                        const otherRequest = otherActiveMealRequests[0];
+                        try {
+                            const newFingerprint = await fingerprintService.create(
+                                otherRequest.mealType,
+                                null,
+                                null,
+                                null,
+                                'Otomatik oluşturuldu'
+                            );
+                            fingerprintId = newFingerprint.id;
+                            mealRequestId = otherRequest.id;
+                            console.log('Auto-created fingerprint:', fingerprintId);
+                        } catch (error) {
+                            console.error('Error creating fingerprint:', error);
+                            alert('Parmak izi oluşturulamadı: ' + error.message);
+                            sendBtn.disabled = false;
+                            sendBtn.textContent = originalText;
+                            return;
+                        }
+                    }
+                    // Case 2: Other has fingerprint, I need meal request
+                    else if (otherActiveFingerprints.length > 0 && !mealRequestId) {
+                        const otherFingerprint = otherActiveFingerprints[0];
+                        try {
+                            const newMealRequest = await mealRequestService.create(
+                                otherFingerprint.mealType,
+                                null,
+                                null,
+                                null,
+                                'Otomatik oluşturuldu'
+                            );
+                            mealRequestId = newMealRequest.id;
+                            fingerprintId = otherFingerprint.id;
+                            console.log('Auto-created meal request:', mealRequestId);
+                        } catch (error) {
+                            console.error('Error creating meal request:', error);
+                            alert('Yemek talebi oluşturulamadı: ' + error.message);
+                            sendBtn.disabled = false;
+                            sendBtn.textContent = originalText;
+                            return;
+                        }
+                    }
+                    // Case 3: I have one but other doesn't have matching
+                    else if (fingerprintId && !mealRequestId) {
+                        const myFingerprint = myFingerprints.find(f => f.id === fingerprintId);
+                        if (myFingerprint) {
+                            const matchingRequest = otherActiveMealRequests.find(m => 
+                                m.mealType === myFingerprint.mealType
+                            );
+                            if (matchingRequest) {
+                                mealRequestId = matchingRequest.id;
+                            } else {
+                                alert('Karşı tarafta eşleşen bir yemek talebi bulunamadı.');
+                                sendBtn.disabled = false;
+                                sendBtn.textContent = originalText;
+                                return;
+                            }
+                        }
+                    }
+                    else if (mealRequestId && !fingerprintId) {
+                        const myMealRequest = myMealRequests.find(m => m.id === mealRequestId);
+                        if (myMealRequest) {
+                            const matchingFingerprint = otherActiveFingerprints.find(f => 
+                                f.mealType === myMealRequest.mealType
+                            );
+                            if (matchingFingerprint) {
+                                fingerprintId = matchingFingerprint.id;
+                            } else {
+                                alert('Karşı tarafta eşleşen bir parmak izi bulunamadı.');
+                                sendBtn.disabled = false;
+                                sendBtn.textContent = originalText;
+                                return;
+                            }
+                        }
+                    }
+                    else {
+                        alert('Eşleşme oluşturmak için karşı tarafta aktif bir talep gerekiyor.');
+                        sendBtn.disabled = false;
+                        sendBtn.textContent = originalText;
+                        return;
+                    }
                 }
 
                 console.log('Creating match with fingerprintId:', fingerprintId, 'mealRequestId:', mealRequestId);

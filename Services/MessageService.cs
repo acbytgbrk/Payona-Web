@@ -104,4 +104,77 @@ public class MessageService
             Surname = u.Surname
         }).ToList();
     }
+
+    public async Task<List<ConversationSummaryDto>> GetConversationSummariesAsync(Guid userId)
+    {
+        // Get all messages with related users
+        var allMessages = await _context.Messages
+            .Include(m => m.Sender)
+            .Include(m => m.Receiver)
+            .Where(m => m.SenderId == userId || m.ReceiverId == userId)
+            .ToListAsync();
+
+        // Group by conversation partner
+        var conversationGroups = allMessages
+            .GroupBy(m => m.SenderId == userId ? m.ReceiverId : m.SenderId)
+            .ToList();
+
+        var summaries = new List<ConversationSummaryDto>();
+
+        foreach (var group in conversationGroups)
+        {
+            var otherUserId = group.Key;
+            var messages = group.OrderByDescending(m => m.CreatedAt).ToList();
+            var lastMessage = messages.First();
+
+            // Get other user
+            var otherUser = lastMessage.SenderId == userId ? lastMessage.Receiver : lastMessage.Sender;
+
+            // Count unread messages
+            var unreadCount = messages
+                .Where(m => m.SenderId == otherUserId && m.ReceiverId == userId && !m.IsRead)
+                .Count();
+
+            summaries.Add(new ConversationSummaryDto
+            {
+                UserId = otherUserId,
+                UserName = otherUser.Name + " " + otherUser.Surname,
+                LastMessage = lastMessage.Content,
+                LastMessageTime = lastMessage.CreatedAt,
+                UnreadCount = unreadCount,
+                IsLastMessageFromMe = lastMessage.SenderId == userId
+            });
+        }
+
+        // Sort by last message time (most recent first)
+        return summaries.OrderByDescending(s => s.LastMessageTime).ToList();
+    }
+
+    public async Task<List<InboxMessageDto>> GetInboxMessagesAsync(Guid userId)
+    {
+        // Get all messages where user is the receiver, ordered by most recent first
+        var messages = await _context.Messages
+            .Include(m => m.Sender)
+            .Where(m => m.ReceiverId == userId)
+            .OrderByDescending(m => m.CreatedAt)
+            .ToListAsync();
+
+        return messages.Select(m => new InboxMessageDto
+        {
+            Id = m.Id,
+            SenderId = m.SenderId,
+            SenderName = m.Sender.Name + " " + m.Sender.Surname,
+            Content = m.Content,
+            IsRead = m.IsRead,
+            CreatedAt = m.CreatedAt,
+            MatchId = m.MatchId
+        }).ToList();
+    }
+
+    public async Task<int> GetUnreadMessageCountAsync(Guid userId)
+    {
+        return await _context.Messages
+            .Where(m => m.ReceiverId == userId && !m.IsRead)
+            .CountAsync();
+    }
 }

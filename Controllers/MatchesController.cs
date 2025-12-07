@@ -68,4 +68,12 @@ public class MatchesController : ControllerBase
 
         return Ok(new { message = "Durum güncellendi" });
     }
+
+    [HttpGet("activity-stats")]
+    public async Task<IActionResult> GetActivityStats([FromQuery] string period = "week")
+    {
+        var userId = GetUserId();
+        var result = await _matchService.GetActivityStatsAsync(userId, period);
+        return Ok(result);
+    }
 }
