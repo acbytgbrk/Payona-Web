@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Payona.API.DTOs;
@@ -29,9 +30,35 @@ public class MessagesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> SendMessage([FromBody] SendMessageRequest request)
     {
-        var userId = GetUserId();
-        var result = await _messageService.SendMessageAsync(userId, request);
-        return Ok(result);
+        if (request == null)
+        {
+            return BadRequest(new { message = "İstek verisi bulunamadı" });
+        }
+
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .SelectMany(x => x.Value!.Errors.Select(e => e.ErrorMessage))
+                .ToList();
+            
+            return BadRequest(new { message = string.Join(" ", errors) });
+        }
+
+        try
+        {
+            var userId = GetUserId();
+            var result = await _messageService.SendMessageAsync(userId, request);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = "Mesaj gönderilemedi: " + ex.Message });
+        }
     }
 
     [HttpGet("conversation/{otherUserId}")]

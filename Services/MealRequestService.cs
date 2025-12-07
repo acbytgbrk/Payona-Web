@@ -20,13 +20,54 @@ public class MealRequestService
 
     public async Task<MealRequestDto> CreateAsync(Guid userId, CreateMealRequestRequest request)
     {
+        // Parse DateTime from string (ensure UTC)
+        DateTime? preferredDate = null;
+        if (!string.IsNullOrWhiteSpace(request.PreferredDate))
+        {
+            // HTML date input sends "YYYY-MM-DD" format (date only, no time)
+            // Parse as UTC to avoid timezone issues
+            if (DateTime.TryParseExact(request.PreferredDate, "yyyy-MM-dd", 
+                System.Globalization.CultureInfo.InvariantCulture, 
+                System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal, 
+                out var parsedDate))
+            {
+                preferredDate = parsedDate;
+            }
+            else if (DateTime.TryParse(request.PreferredDate, null, System.Globalization.DateTimeStyles.None, out var fallbackDate))
+            {
+                // Fallback: if parse exact fails, use regular parse and ensure UTC
+                preferredDate = fallbackDate.Kind == DateTimeKind.Unspecified 
+                    ? DateTime.SpecifyKind(fallbackDate.Date, DateTimeKind.Utc)
+                    : fallbackDate.ToUniversalTime();
+            }
+        }
+
+        // Parse TimeSpan from string
+        TimeSpan? preferredStartTime = null;
+        if (!string.IsNullOrWhiteSpace(request.PreferredStartTime))
+        {
+            if (TimeSpan.TryParse(request.PreferredStartTime, out var parsedStartTime))
+            {
+                preferredStartTime = parsedStartTime;
+            }
+        }
+
+        TimeSpan? preferredEndTime = null;
+        if (!string.IsNullOrWhiteSpace(request.PreferredEndTime))
+        {
+            if (TimeSpan.TryParse(request.PreferredEndTime, out var parsedEndTime))
+            {
+                preferredEndTime = parsedEndTime;
+            }
+        }
+
         var mealRequest = new MealRequest
         {
             UserId = userId,
             MealType = request.MealType,
-            PreferredDate = request.PreferredDate,
-            PreferredStartTime = request.PreferredStartTime,
-            PreferredEndTime = request.PreferredEndTime,
+            PreferredDate = preferredDate,
+            PreferredStartTime = preferredStartTime,
+            PreferredEndTime = preferredEndTime,
             Notes = request.Notes
         };
 

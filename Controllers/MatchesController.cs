@@ -28,13 +28,25 @@ public class MatchesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateMatch([FromQuery] Guid fingerprintId, [FromQuery] Guid mealRequestId)
     {
-        var userId = GetUserId();
-        var result = await _matchService.CreateMatchAsync(fingerprintId, mealRequestId, userId);
-        
-        if (result == null)
-            return BadRequest(new { message = "Eşleşme oluşturulamadı" });
+        if (fingerprintId == Guid.Empty || mealRequestId == Guid.Empty)
+        {
+            return BadRequest(new { message = "Geçersiz parmak izi veya yemek talebi ID'si" });
+        }
 
-        return Ok(result);
+        try
+        {
+            var userId = GetUserId();
+            var result = await _matchService.CreateMatchAsync(fingerprintId, mealRequestId, userId);
+            
+            if (result == null)
+                return BadRequest(new { message = "Eşleşme oluşturulamadı. Taleplerin aktif olduğundan ve farklı kullanıcılara ait olduğundan emin olun." });
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = "Eşleşme oluşturulamadı: " + ex.Message });
+        }
     }
 
     [HttpGet("my")]

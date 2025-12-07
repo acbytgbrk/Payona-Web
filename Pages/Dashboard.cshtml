@@ -8,8 +8,8 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
         <h1>Ana Sayfa</h1>
         <div class="flex gap-2">
-            <button class="btn btn-primary" onclick="openCreateModal('give')">Verme Talebi Oluştur</button>
-            <button class="btn btn-secondary" onclick="openCreateModal('take')">Alma Talebi Oluştur</button>
+            <button class="btn btn-primary" id="createGiveBtn" data-type="give">Verme Talebi Oluştur</button>
+            <button class="btn btn-secondary" id="createTakeBtn" data-type="take">Alma Talebi Oluştur</button>
         </div>
     </div>
 
@@ -47,10 +47,18 @@
     <div class="modal">
         <div class="modal-header">
             <h2 id="modalTitle">Talep Oluştur</h2>
-            <button class="modal-close" onclick="closeCreateModal()">&times;</button>
+            <button class="modal-close" id="closeCreateModalBtn">&times;</button>
         </div>
         <form id="createRequestForm">
             <input type="hidden" id="requestType" />
+            <div class="form-group">
+                <label class="form-label" for="mealType">Öğün Türü</label>
+                <select id="mealType" class="form-select" required>
+                    <option value="">Öğün Seçiniz</option>
+                    <option value="lunch">Öğle Yemeği</option>
+                    <option value="dinner">Akşam Yemeği</option>
+                </select>
+            </div>
             <div class="form-group">
                 <label class="form-label" for="preferredDate">Tercih Edilen Tarih (İsteğe Bağlı)</label>
                 <input type="date" id="preferredDate" class="form-input" />
@@ -69,8 +77,11 @@
             </div>
             <div id="createError" class="text-error hidden mb-2"></div>
             <div class="flex gap-2">
-                <button type="submit" class="btn btn-primary" style="flex: 1;">Oluştur</button>
-                <button type="button" class="btn btn-secondary" onclick="closeCreateModal()">İptal</button>
+                <button type="submit" class="btn btn-primary" style="flex: 1;" id="submitCreateBtn">
+                    <span class="btn-text">Oluştur</span>
+                    <span class="btn-loading hidden">Oluşturuluyor...</span>
+                </button>
+                <button type="button" class="btn btn-secondary" id="cancelCreateModalBtn">İptal</button>
             </div>
         </form>
     </div>
@@ -80,6 +91,7 @@
     <script type="module">
         import { authService } from '/js/modules/auth.js';
         import { mealRequestService } from '/js/modules/mealRequest.js';
+        import { fingerprintService } from '/js/modules/fingerprint.js';
 
         // Check authentication
         if (!authService.isAuthenticated()) {
@@ -176,16 +188,40 @@
         // Load requests
         async function loadRequests() {
             try {
-                const [myRequests, allRequests] = await Promise.all([
+                const [myMealRequests, allMealRequests, myFingerprints, allFingerprints] = await Promise.all([
                     mealRequestService.getMy(),
-                    mealRequestService.getAll()
+                    mealRequestService.getAll(),
+                    fingerprintService.getMy(),
+                    fingerprintService.getAll()
                 ]);
 
                 const user = authService.getCurrentUser();
-                const otherRequests = allRequests.filter(req => 
-                    req.userId !== user.id && 
-                    req.userDorm === user.dorm
-                );
+                
+                // Combine my requests (both meal requests and fingerprints)
+                const myRequests = [
+                    ...myMealRequests.map(req => ({ ...req, type: 'mealRequest' })),
+                    ...myFingerprints.map(fp => ({ ...fp, type: 'fingerprint' }))
+                ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                // Combine other requests (filter by dorm if available)
+                const otherMealRequests = allMealRequests.filter(req => {
+                    if (req.userId === user.id) return false;
+                    if (user.dorm && req.userDorm) {
+                        return req.userDorm === user.dorm;
+                    }
+                    return true; // Show all if dorm info not available
+                }).map(req => ({ ...req, type: 'mealRequest' }));
+
+                const otherFingerprints = allFingerprints.filter(fp => {
+                    if (fp.userId === user.id) return false;
+                    if (user.dorm && fp.userDorm) {
+                        return fp.userDorm === user.dorm;
+                    }
+                    return true; // Show all if dorm info not available
+                }).map(fp => ({ ...fp, type: 'fingerprint' }));
+
+                const otherRequests = [...otherMealRequests, ...otherFingerprints]
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
                 renderRequests('myRequests', myRequests, true);
                 renderRequests('otherRequests', otherRequests, false);
@@ -207,33 +243,48 @@
             }
 
             container.innerHTML = requests.map(request => {
-                const mealType = (request.mealType || '').toLowerCase();
-                const isGive = mealType === 'give' || mealType === 'lunch';
+                const isFingerprint = request.type === 'fingerprint';
+                const isGive = isFingerprint; // Fingerprint = give, MealRequest = take
+                const dateField = isFingerprint ? 'availableDate' : 'preferredDate';
+                const startTimeField = isFingerprint ? 'startTime' : 'preferredStartTime';
+                const endTimeField = isFingerprint ? 'endTime' : 'preferredEndTime';
+                const notesField = isFingerprint ? 'description' : 'notes';
+                const deleteAction = isFingerprint ? 'deleteFingerprint' : 'deleteRequest';
+                
                 return `
-                <div class="card request-card" onclick="openChat('${request.userId}', '${request.userName}')">
+                <div class="card request-card" 
+                     data-user-id="${request.userId}" 
+                     data-user-name="${(request.userName || '').replace(/"/g, '&quot;')}"
+                     data-request-id="${request.id}"
+                     data-request-type="${request.type}">
                     <div class="flex justify-between items-center mb-2">
                         <span class="request-type ${isGive ? 'give' : 'take'}">
                             ${isGive ? '🍽️ Verme' : '🍴 Alma'}
                         </span>
-                        <span class="badge badge-primary">${request.status}</span>
+                        <span class="badge badge-primary">${request.status || 'active'}</span>
                     </div>
-                    <p><strong>${request.userName}</strong> ${request.userGender ? `(${request.userGender})` : ''}</p>
-                    ${request.preferredDate ? `<p style="color: var(--text-secondary); font-size: 0.9rem;">Tarih: ${new Date(request.preferredDate).toLocaleDateString('tr-TR')}</p>` : ''}
-                    ${request.preferredStartTime && request.preferredEndTime ? 
-                        `<p style="color: var(--text-secondary); font-size: 0.9rem;">Saat: ${request.preferredStartTime} - ${request.preferredEndTime}</p>` : ''}
-                    ${request.notes ? `<p style="margin-top: 0.5rem;">${request.notes}</p>` : ''}
+                    <p><strong>${request.userName || 'Bilinmeyen'}</strong> ${request.userGender ? `(${request.userGender})` : ''}</p>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                        Öğün: ${request.mealType === 'lunch' ? 'Öğle Yemeği' : request.mealType === 'dinner' ? 'Akşam Yemeği' : request.mealType}
+                    </p>
+                    ${request[dateField] ? `<p style="color: var(--text-secondary); font-size: 0.9rem;">Tarih: ${new Date(request[dateField]).toLocaleDateString('tr-TR')}</p>` : ''}
+                    ${request[startTimeField] && request[endTimeField] ? 
+                        `<p style="color: var(--text-secondary); font-size: 0.9rem;">Saat: ${request[startTimeField]} - ${request[endTimeField]}</p>` : ''}
+                    ${request[notesField] ? `<p style="margin-top: 0.5rem;">${request[notesField]}</p>` : ''}
                     <p style="color: var(--text-tertiary); font-size: 0.85rem; margin-top: 0.5rem;">
                         ${new Date(request.createdAt).toLocaleString('tr-TR')}
                     </p>
-                    ${isOwn ? `<button class="btn btn-danger btn-sm mt-2" onclick="event.stopPropagation(); deleteRequest('${request.id}')">Sil</button>` : ''}
+                    ${isOwn ? `<button class="btn btn-danger btn-sm mt-2 delete-request-btn" data-request-id="${request.id}" data-request-type="${request.type}">Sil</button>` : ''}
                 </div>
             `;
             }).join('');
         }
 
+        // Modal functions
         function openCreateModal(type) {
             document.getElementById('requestType').value = type;
-            document.getElementById('modalTitle').textContent = `${type === 'give' ? 'Verme' : 'Alma'} Talebi Oluştur`;
+            const modalTitle = type === 'give' ? 'Verme' : 'Alma';
+            document.getElementById('modalTitle').textContent = `${modalTitle} Talebi Oluştur`;
             document.getElementById('createModal').classList.remove('hidden');
         }
 
@@ -241,10 +292,18 @@
             document.getElementById('createModal').classList.add('hidden');
             document.getElementById('createRequestForm').reset();
             document.getElementById('createError').classList.add('hidden');
+            const submitBtn = document.getElementById('submitCreateBtn');
+            submitBtn.disabled = false;
+            submitBtn.querySelector('.btn-text').classList.remove('hidden');
+            submitBtn.querySelector('.btn-loading').classList.add('hidden');
         }
 
-        function openChat(userId, userName) {
-            window.location.href = `/Chat?userId=${userId}&userName=${encodeURIComponent(userName)}`;
+        function openChat(userId, userName, requestId = null, requestType = null) {
+            let url = `/Chat?userId=${userId}&userName=${encodeURIComponent(userName)}`;
+            if (requestId && requestType) {
+                url += `&requestId=${requestId}&requestType=${requestType}`;
+            }
+            window.location.href = url;
         }
 
         async function deleteRequest(id) {
@@ -258,35 +317,93 @@
             }
         }
 
+        async function deleteFingerprint(id) {
+            if (!confirm('Bu parmak izini silmek istediğinizden emin misiniz?')) return;
+            
+            try {
+                await fingerprintService.delete(id);
+                loadRequests();
+            } catch (error) {
+                alert('Parmak izi silinemedi: ' + error.message);
+            }
+        }
+
+        // Event listeners for buttons
+        document.getElementById('createGiveBtn').addEventListener('click', () => {
+            openCreateModal('give');
+        });
+
+        document.getElementById('createTakeBtn').addEventListener('click', () => {
+            openCreateModal('take');
+        });
+
+        document.getElementById('closeCreateModalBtn').addEventListener('click', closeCreateModal);
+        document.getElementById('cancelCreateModalBtn').addEventListener('click', closeCreateModal);
+
         // Create request handler
         document.getElementById('createRequestForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const errorDiv = document.getElementById('createError');
+            const submitBtn = document.getElementById('submitCreateBtn');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const btnLoading = submitBtn.querySelector('.btn-loading');
+            
             errorDiv.classList.add('hidden');
+            submitBtn.disabled = true;
+            btnText.classList.add('hidden');
+            btnLoading.classList.remove('hidden');
 
-            const mealType = document.getElementById('requestType').value;
+            const requestType = document.getElementById('requestType').value; // 'give' or 'take'
+            const mealType = document.getElementById('mealType').value;
             const preferredDate = document.getElementById('preferredDate').value || null;
             const preferredStartTime = document.getElementById('preferredStartTime').value || null;
             const preferredEndTime = document.getElementById('preferredEndTime').value || null;
-            const notes = document.getElementById('notes').value || null;
+            const notes = document.getElementById('notes').value.trim() || null;
+
+            // Validation
+            if (!mealType) {
+                errorDiv.textContent = 'Lütfen öğün türü seçiniz';
+                errorDiv.classList.remove('hidden');
+                submitBtn.disabled = false;
+                btnText.classList.remove('hidden');
+                btnLoading.classList.add('hidden');
+                return;
+            }
 
             try {
                 // Convert time format from HH:mm to HH:mm:ss for TimeSpan
                 const startTime = preferredStartTime ? `${preferredStartTime}:00` : null;
                 const endTime = preferredEndTime ? `${preferredEndTime}:00` : null;
                 
-                await mealRequestService.create(
-                    mealType,
-                    preferredDate,
-                    startTime,
-                    endTime,
-                    notes
-                );
+                if (requestType === 'give') {
+                    // Create fingerprint (giving meal)
+                    await fingerprintService.create(
+                        mealType,
+                        preferredDate,
+                        startTime,
+                        endTime,
+                        notes
+                    );
+                } else {
+                    // Create meal request (taking meal)
+                    await mealRequestService.create(
+                        mealType,
+                        preferredDate,
+                        startTime,
+                        endTime,
+                        notes
+                    );
+                }
+                
                 closeCreateModal();
                 loadRequests();
             } catch (error) {
                 errorDiv.textContent = error.message || 'Talep oluşturulamadı';
                 errorDiv.classList.remove('hidden');
+            } finally {
+                submitBtn.disabled = false;
+                btnText.classList.remove('hidden');
+                btnLoading.classList.add('hidden');
             }
         });
 
@@ -294,6 +411,35 @@
         document.getElementById('createModal').addEventListener('click', (e) => {
             if (e.target.id === 'createModal') {
                 closeCreateModal();
+            }
+        });
+
+        // Event delegation for dynamic content
+        document.addEventListener('click', (e) => {
+            // Handle request card click (open chat)
+            const requestCard = e.target.closest('.request-card');
+            if (requestCard && !e.target.closest('.delete-request-btn')) {
+                const userId = requestCard.dataset.userId;
+                const userName = requestCard.dataset.userName;
+                const requestId = requestCard.dataset.requestId;
+                const requestType = requestCard.dataset.requestType;
+                if (userId && userName) {
+                    openChat(userId, userName, requestId, requestType);
+                }
+            }
+
+            // Handle delete request button
+            if (e.target.classList.contains('delete-request-btn')) {
+                e.stopPropagation();
+                const requestId = e.target.dataset.requestId;
+                const requestType = e.target.dataset.requestType;
+                if (requestId) {
+                    if (requestType === 'fingerprint') {
+                        deleteFingerprint(requestId);
+                    } else {
+                        deleteRequest(requestId);
+                    }
+                }
             }
         });
 

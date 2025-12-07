@@ -20,6 +20,12 @@ public class MessageService
 
     public async Task<MessageDto> SendMessageAsync(Guid senderId, SendMessageRequest request)
     {
+        // Prevent users from sending messages to themselves
+        if (senderId == request.ReceiverId)
+        {
+            throw new InvalidOperationException("Kendinize mesaj gönderemezsiniz");
+        }
+
         var message = new Message
         {
             SenderId = senderId,
