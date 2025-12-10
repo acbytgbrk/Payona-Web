@@ -522,29 +522,33 @@
         document.getElementById('sendMatchRequestBtn').addEventListener('click', sendMatchRequest);
 
         // 7. EŞLEŞME DURUMUNU KONTROL ET
-        async function checkMatchStatus() {
-            try {
-                const matches = await matchService.getMyMatches();
-                const match = matches.find(m => 
-                    (m.giverId === currentUser.id && m.receiverId === otherUserId) ||
-                    (m.receiverId === currentUser.id && m.giverId === otherUserId)
-                );
-                
-                const badge = document.getElementById('matchStatusBadge');
-                const btn = document.getElementById('sendMatchRequestBtn');
-                
-                if (match) {
-                    badge.style.display = 'block';
-                    btn.style.display = 'none';
-                } else {
-                    badge.style.display = 'none';
-                    btn.style.display = 'flex';
-                }
-            } catch (error) {
-                console.error('Error checking match status:', error);
+      async function checkMatchStatus() {
+    try {
+        // talep bazlı kontrol yapıyoruz
+        const response = await fetch(`/api/matches/for-request?fingerprintId=${fingerprintId}&mealRequestId=${mealRequestId}`, {
+            headers: {
+                'Authorization': `Bearer ${authService.getToken()}`
             }
-        }
+        });
 
+        const match = await response.json();
+
+        const badge = document.getElementById('matchStatusBadge');
+        const btn = document.getElementById('sendMatchRequestBtn');
+
+        if (match) {
+            // talep gerçekten eşleşmiş
+            badge.style.display = 'block';
+            btn.style.display = 'none';
+        } else {
+            // eşleşme yok → kullanıcı eşleşmeyi başlatabilir
+            badge.style.display = 'none';
+            btn.style.display = 'flex';
+        }
+    } catch (error) {
+        console.error('Match status kontrol hatası:', error);
+    }
+}
         // BAŞLATMA
         loadUserRequests();
         loadMessages();

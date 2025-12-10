@@ -18,6 +18,9 @@ public class MatchService
         _context = context;
     }
 
+    // =====================================================
+    // CREATE MATCH
+    // =====================================================
     public async Task<MatchDto?> CreateMatchAsync(Guid fingerprintId, Guid mealRequestId, Guid currentUserId)
     {
         var fingerprint = await _context.Fingerprints
@@ -31,36 +34,28 @@ public class MatchService
         if (fingerprint == null || mealRequest == null)
             return null;
 
-        // Eşleşme mantığı:
-        // - fingerprint birinin (giver), mealRequest diğerinin (receiver) olmalı
-        // - İkisi de aynı kişiye aitse veya ikisi de başkasına aitse hata
-        // - Biri currentUserId'ye, diğeri başkasına aitse OK
-        
         bool fingerprintIsMine = fingerprint.UserId == currentUserId;
         bool mealRequestIsMine = mealRequest.UserId == currentUserId;
-        
-        // Kendi ilanıyla eşleşmesin (ikisi de benim)
+
+        // Kendi ilanıyla eşleşmesin
         if (fingerprintIsMine && mealRequestIsMine)
             return null;
-        
-        // İkisi de başkasına aitse hata (ben eşleşme oluşturamam)
+
+        // İkisi de başkasına aitse eşleşme oluşturamaz
         if (!fingerprintIsMine && !mealRequestIsMine)
             return null;
 
-        // ÖNEMLİ: Geçmiş eşleşmeler yeni eşleşmeyi engellemez
-        // Her yeni aktif talep bağımsız olarak eşleşebilir
-        // Sadece aynı fingerprint ve mealRequest kombinasyonu için zaten eşleşme varsa kontrol et
+        // Bu kombinasyon daha önce eşleşmiş mi?
         var existingMatch = await _context.Matches
-            .FirstOrDefaultAsync(m => 
-                m.FingerprintId == fingerprintId && 
+            .FirstOrDefaultAsync(m =>
+                m.FingerprintId == fingerprintId &&
                 m.MealRequestId == mealRequestId);
 
         if (existingMatch != null)
         {
-            // Bu spesifik kombinasyon zaten eşleşmiş, mevcut eşleşmeyi döndür
             await _context.Entry(existingMatch).Reference(m => m.Giver).LoadAsync();
             await _context.Entry(existingMatch).Reference(m => m.Receiver).LoadAsync();
-            
+
             return new MatchDto
             {
                 Id = existingMatch.Id,
@@ -74,6 +69,7 @@ public class MatchService
             };
         }
 
+        // Yeni eşleşme oluştur
         var match = new Match
         {
             FingerprintId = fingerprintId,
@@ -85,7 +81,6 @@ public class MatchService
 
         _context.Matches.Add(match);
 
-        // İlanları matched yap
         fingerprint.Status = "matched";
         mealRequest.Status = "matched";
 
@@ -107,12 +102,45 @@ public class MatchService
         };
     }
 
+    // =====================================================
+    // GET MATCH FOR SPECIFIC REQUEST (NEW)
+    // =====================================================
+    public async Task<MatchDto?> GetMatchByFingerprintAndRequestAsync(Guid fingerprintId, Guid mealRequestId)
+    {
+        var match = await _context.Matches
+            .Include(m => m.Giver)
+            .Include(m => m.Receiver)
+            .FirstOrDefaultAsync(m =>
+                m.FingerprintId == fingerprintId &&
+                m.MealRequestId == mealRequestId);
+
+        if (match == null)
+            return null;
+
+        return new MatchDto
+        {
+            Id = match.Id,
+            GiverId = match.GiverId,
+            GiverName = match.Giver.Name + " " + match.Giver.Surname,
+            ReceiverId = match.ReceiverId,
+            ReceiverName = match.Receiver.Name + " " + match.Receiver.Surname,
+            MealType = match.MealType,
+            Status = match.Status,
+            MatchDate = match.MatchDate
+        };
+    }
+
+    // =====================================================
+    // GET MY MATCHES (FULL HISTORY)
+    // =====================================================
     public async Task<List<MatchDto>> GetMyMatchesAsync(Guid userId)
     {
         var matches = await _context.Matches
             .Include(m => m.Giver)
             .Include(m => m.Receiver)
-            .Where(m => m.GiverId == userId || m.ReceiverId == userId)
+            .Where(m =>
+                m.GiverId == userId ||
+                m.ReceiverId == userId)
             .OrderByDescending(m => m.CreatedAt)
             .ToListAsync();
 
@@ -129,11 +157,15 @@ public class MatchService
         }).ToList();
     }
 
+    // =====================================================
+    // UPDATE STATUS
+    // =====================================================
     public async Task<bool> UpdateMatchStatusAsync(Guid matchId, Guid userId, string status)
     {
         var match = await _context.Matches
-            .FirstOrDefaultAsync(m => m.Id == matchId && 
-                                     (m.GiverId == userId || m.ReceiverId == userId));
+            .FirstOrDefaultAsync(m =>
+                m.Id == matchId &&
+                (m.GiverId == userId || m.ReceiverId == userId));
 
         if (match == null)
             return false;
@@ -143,24 +175,23 @@ public class MatchService
         return true;
     }
 
-    /// <summary>
-    /// İki kullanıcı arasında otomatik eşleşme oluşturur. Eksik talepleri otomatik oluşturur.
-    /// </summary>
+    // =====================================================
+    // AUTO MATCH
+    // =====================================================
     public async Task<MatchDto?> CreateAutoMatchAsync(Guid currentUserId, Guid otherUserId, string mealType = "lunch")
     {
-        // Mevcut aktif talepleri kontrol et
         var myFingerprints = await _context.Fingerprints
             .Where(f => f.UserId == currentUserId && f.Status == "active")
             .ToListAsync();
-        
+
         var myMealRequests = await _context.MealRequests
             .Where(m => m.UserId == currentUserId && m.Status == "active")
             .ToListAsync();
-        
+
         var otherFingerprints = await _context.Fingerprints
             .Where(f => f.UserId == otherUserId && f.Status == "active")
             .ToListAsync();
-        
+
         var otherMealRequests = await _context.MealRequests
             .Where(m => m.UserId == otherUserId && m.Status == "active")
             .ToListAsync();
@@ -168,135 +199,119 @@ public class MatchService
         Guid fingerprintId;
         Guid mealRequestId;
 
-        // Senaryo 1: Benim fingerprint'im var, karşı tarafın meal request'i var
+        // Senaryo 1
         if (myFingerprints.Any() && otherMealRequests.Any())
         {
-            var matchingFp = myFingerprints.FirstOrDefault(f => string.IsNullOrWhiteSpace(mealType) || f.MealType == mealType) ?? myFingerprints.First();
-            var matchingMr = otherMealRequests.FirstOrDefault(m => string.IsNullOrWhiteSpace(mealType) || m.MealType == mealType) ?? otherMealRequests.First();
-            fingerprintId = matchingFp.Id;
-            mealRequestId = matchingMr.Id;
+            var fp = myFingerprints.First();
+            var mr = otherMealRequests.First();
+            fingerprintId = fp.Id;
+            mealRequestId = mr.Id;
         }
-        // Senaryo 2: Benim meal request'im var, karşı tarafın fingerprint'i var
+        // Senaryo 2
         else if (myMealRequests.Any() && otherFingerprints.Any())
         {
-            var matchingMr = myMealRequests.FirstOrDefault(m => string.IsNullOrWhiteSpace(mealType) || m.MealType == mealType) ?? myMealRequests.First();
-            var matchingFp = otherFingerprints.FirstOrDefault(f => string.IsNullOrWhiteSpace(mealType) || f.MealType == mealType) ?? otherFingerprints.First();
-            mealRequestId = matchingMr.Id;
-            fingerprintId = matchingFp.Id;
+            var mr = myMealRequests.First();
+            var fp = otherFingerprints.First();
+            fingerprintId = fp.Id;
+            mealRequestId = mr.Id;
         }
-        // Senaryo 3: Benim fingerprint'im var, karşı tarafın meal request'i yok - otomatik oluştur
+        // Senaryo 3
         else if (myFingerprints.Any() && !otherMealRequests.Any())
         {
-            var myFingerprint = myFingerprints.FirstOrDefault(f => string.IsNullOrWhiteSpace(mealType) || f.MealType == mealType) ?? myFingerprints.First();
-            fingerprintId = myFingerprint.Id;
-            
-            // Karşı taraf için meal request oluştur
-            var newMealRequest = new MealRequest
+            var fp = myFingerprints.First();
+            fingerprintId = fp.Id;
+
+            var newReq = new MealRequest
             {
                 UserId = otherUserId,
-                MealType = myFingerprint.MealType,
-                PreferredDate = myFingerprint.AvailableDate,
-                PreferredStartTime = myFingerprint.StartTime,
-                PreferredEndTime = myFingerprint.EndTime,
+                MealType = fp.MealType,
+                PreferredDate = fp.AvailableDate,
+                PreferredStartTime = fp.StartTime,
+                PreferredEndTime = fp.EndTime,
                 Notes = "Otomatik oluşturuldu",
                 Status = "active"
             };
-            
-            _context.MealRequests.Add(newMealRequest);
+
+            _context.MealRequests.Add(newReq);
             await _context.SaveChangesAsync();
-            mealRequestId = newMealRequest.Id;
+            mealRequestId = newReq.Id;
         }
-        // Senaryo 4: Benim meal request'im var, karşı tarafın fingerprint'i yok - otomatik oluştur
+        // Senaryo 4
         else if (myMealRequests.Any() && !otherFingerprints.Any())
         {
-            var myMealRequest = myMealRequests.FirstOrDefault(m => string.IsNullOrWhiteSpace(mealType) || m.MealType == mealType) ?? myMealRequests.First();
-            mealRequestId = myMealRequest.Id;
-            
-            // Karşı taraf için fingerprint oluştur
-            var newFingerprint = new Fingerprint
+            var mr = myMealRequests.First();
+            mealRequestId = mr.Id;
+
+            var newFp = new Fingerprint
             {
                 UserId = otherUserId,
-                MealType = myMealRequest.MealType,
-                AvailableDate = myMealRequest.PreferredDate,
-                StartTime = myMealRequest.PreferredStartTime,
-                EndTime = myMealRequest.PreferredEndTime,
+                MealType = mr.MealType,
+                AvailableDate = mr.PreferredDate,
+                StartTime = mr.PreferredStartTime,
+                EndTime = mr.PreferredEndTime,
                 Description = "Otomatik oluşturuldu",
                 Status = "active"
             };
-            
-            _context.Fingerprints.Add(newFingerprint);
+
+            _context.Fingerprints.Add(newFp);
             await _context.SaveChangesAsync();
-            fingerprintId = newFingerprint.Id;
+            fingerprintId = newFp.Id;
         }
-        // Senaryo 5: Hiçbiri yok - her iki taraf için de otomatik oluştur
+        // Senaryo 5
         else
         {
-            // Varsayılan değerler
             var defaultDate = DateTime.UtcNow.Date.AddDays(1);
-            var defaultStartTime = new TimeSpan(12, 0, 0); // 12:00
-            var defaultEndTime = new TimeSpan(14, 0, 0); // 14:00
-            
-            // Benim için fingerprint oluştur
-            var myFingerprint = new Fingerprint
+            var defaultStart = new TimeSpan(12, 0, 0);
+            var defaultEnd = new TimeSpan(14, 0, 0);
+
+            var fp = new Fingerprint
             {
                 UserId = currentUserId,
                 MealType = mealType,
                 AvailableDate = defaultDate,
-                StartTime = defaultStartTime,
-                EndTime = defaultEndTime,
+                StartTime = defaultStart,
+                EndTime = defaultEnd,
                 Description = "Otomatik oluşturuldu",
                 Status = "active"
             };
-            
-            // Karşı taraf için meal request oluştur
-            var otherMealRequest = new MealRequest
+
+            var mr = new MealRequest
             {
                 UserId = otherUserId,
                 MealType = mealType,
                 PreferredDate = defaultDate,
-                PreferredStartTime = defaultStartTime,
-                PreferredEndTime = defaultEndTime,
+                PreferredStartTime = defaultStart,
+                PreferredEndTime = defaultEnd,
                 Notes = "Otomatik oluşturuldu",
                 Status = "active"
             };
-            
-            _context.Fingerprints.Add(myFingerprint);
-            _context.MealRequests.Add(otherMealRequest);
+
+            _context.Fingerprints.Add(fp);
+            _context.MealRequests.Add(mr);
             await _context.SaveChangesAsync();
-            
-            fingerprintId = myFingerprint.Id;
-            mealRequestId = otherMealRequest.Id;
+
+            fingerprintId = fp.Id;
+            mealRequestId = mr.Id;
         }
 
-        // Eşleşme oluştur
         return await CreateMatchAsync(fingerprintId, mealRequestId, currentUserId);
     }
 
+    // =====================================================
+    // ACTIVITY STATS
+    // =====================================================
     public async Task<ActivityStatsDto> GetActivityStatsAsync(Guid userId, string period = "week")
     {
         var now = DateTime.UtcNow;
-        DateTime startDate;
-
-        switch (period.ToLower())
+        DateTime startDate = period.ToLower() switch
         {
-            case "day":
-                startDate = now.Date;
-                break;
-            case "week":
-                startDate = now.Date.AddDays(-7);
-                break;
-            case "month":
-                startDate = now.Date.AddMonths(-1);
-                break;
-            case "year":
-                startDate = now.Date.AddYears(-1);
-                break;
-            default:
-                startDate = now.Date.AddDays(-7);
-                break;
-        }
+            "day" => now.Date,
+            "week" => now.Date.AddDays(-7),
+            "month" => now.Date.AddMonths(-1),
+            "year" => now.Date.AddYears(-1),
+            _ => now.Date.AddDays(-7)
+        };
 
-        // Get user's requests (fingerprints + meal requests)
         var fingerprints = await _context.Fingerprints
             .Where(f => f.UserId == userId && f.CreatedAt >= startDate)
             .ToListAsync();
@@ -305,22 +320,17 @@ public class MatchService
             .Where(m => m.UserId == userId && m.CreatedAt >= startDate)
             .ToListAsync();
 
-        // Get matches where user is giver or receiver
         var matches = await _context.Matches
             .Where(m => (m.GiverId == userId || m.ReceiverId == userId) && m.CreatedAt >= startDate)
             .ToListAsync();
 
-        // Group by date
         var dailyStats = new Dictionary<DateTime, DailyActivityDto>();
 
-        // Process requests
         foreach (var fp in fingerprints)
         {
             var date = fp.CreatedAt.Date;
             if (!dailyStats.ContainsKey(date))
-            {
                 dailyStats[date] = new DailyActivityDto { Date = date };
-            }
             dailyStats[date].RequestsCreated++;
         }
 
@@ -328,40 +338,28 @@ public class MatchService
         {
             var date = mr.CreatedAt.Date;
             if (!dailyStats.ContainsKey(date))
-            {
                 dailyStats[date] = new DailyActivityDto { Date = date };
-            }
             dailyStats[date].RequestsCreated++;
         }
 
-        // Process matches
         foreach (var match in matches)
         {
             var date = match.CreatedAt.Date;
             if (!dailyStats.ContainsKey(date))
-            {
                 dailyStats[date] = new DailyActivityDto { Date = date };
-            }
-            
-            // If user created the match (is giver or receiver), count as created
+
             dailyStats[date].MatchesCreated++;
-            
-            // If user is receiver, it's an accepted match (someone else's request matched with user's request)
+
             if (match.ReceiverId == userId)
-            {
                 dailyStats[date].MatchesAccepted++;
-            }
         }
 
-        // Fill missing dates with zeros
         var allDates = new List<DateTime>();
-        for (var date = startDate; date <= now.Date; date = date.AddDays(1))
+        for (var d = startDate; d <= now.Date; d = d.AddDays(1))
         {
-            allDates.Add(date);
-            if (!dailyStats.ContainsKey(date))
-            {
-                dailyStats[date] = new DailyActivityDto { Date = date };
-            }
+            allDates.Add(d);
+            if (!dailyStats.ContainsKey(d))
+                dailyStats[d] = new DailyActivityDto { Date = d };
         }
 
         return new ActivityStatsDto
