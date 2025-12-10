@@ -1,106 +1,282 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Payona</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="~/css/main.css" />
+    <style>
+        /* === TEMA DEĞİŞKENLERİ (CSS Variables) === */
+        :root {
+            /* --- AYDINLIK TEMA --- */
+            --brand-primary: #FF6B6B;
+            --brand-dark: #EE5253;
+            --brand-secondary: #4ECDC4;
+            
+            --bg-body: #f7f9fc;
+            --bg-card: #ffffff;
+            --bg-input: #fdfdfd;
+            
+            --text-main: #2D3436;
+            --text-secondary: #636E72;
+            --text-placeholder: #a4b0be;
+            
+            --border-color: #dfe6e9;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            
+            --nav-bg: rgba(255, 255, 255, 0.85);
+            --nav-text: #2D3436;
+        }
+        /* --- KARANLIK TEMA --- */
+        body.dark-theme {
+            --brand-primary: #FF8787;
+            --brand-dark: #ff6b6b;
+            --brand-secondary: #4cd1c5;
+            
+            --bg-body: #1a1a2e;
+            --bg-card: #16213e;
+            --bg-input: #0f3460;
+            
+            --text-main: #ecf0f1;
+            --text-secondary: #bdc3c7;
+            --text-placeholder: #68798c;
+            
+            --border-color: #2c3e50;
+            --shadow-color: rgba(0, 0, 0, 0.5);
+            
+            --nav-bg: rgba(22, 33, 62, 0.9);
+            --nav-text: #ecf0f1;
+        }
+        /* YUMUŞAK GEÇİŞ EFEKTLERİ */
+        body, .navbar, .card, .auth-card, .form-control, button, a, i, span {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        /* GENEL AYARLAR */
+        * {
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: var(--bg-body);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        /* NAVBAR TASARIMI */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            background-color: var(--nav-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 6px -1px var(--shadow-color);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .navbar-content {
+            width: 90%;
+            max-width: 1200px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--brand-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .navbar-links {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .nav-link {
+            text-decoration: none;
+            color: var(--nav-text);
+            font-weight: 500;
+            font-size: 0.95rem;
+            position: relative;
+        }
+        .nav-link:hover { color: var(--brand-primary); }
+
+        /* Kayıt Ol Butonu Stili (Yeni Eklendi) */
+        .btn-nav-register {
+            padding: 0.5rem 1.2rem;
+            background: var(--brand-primary);
+            color: #ffffff !important;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px var(--shadow-color);
+            border: none;
+        }
+        .btn-nav-register:hover {
+            background: var(--brand-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px var(--shadow-color);
+        }
+
+        /* TEMA BUTONU */
+        .theme-toggle {
+            background: transparent;
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--nav-text);
+            font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+        .theme-toggle:hover {
+            border-color: var(--brand-primary);
+            color: var(--brand-primary);
+            transform: rotate(20deg);
+        }
+        .btn-logout {
+            background: var(--brand-primary);
+            color: #fff;
+            padding: 0.5rem 1.2rem;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .main-content {
+            flex: 1;
+            padding-top: 70px;
+            width: 100%;
+        }
+        footer {
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 2rem;
+            margin-top: auto;
+        }
+        
+        @@media (max-width: 768px) {
+            .navbar-links { gap: 0.8rem; }
+            .nav-link { font-size: 0.85rem; }
+            .btn-nav-register { padding: 0.4rem 0.8rem; font-size: 0.85rem; }
+        }
+    </style>
 </head>
 <body>
-    <div class="app-container">
-        <nav class="navbar" id="navbar">
-            <div class="navbar-content">
-                <a href="/" class="navbar-brand">Payona</a>
-                <div class="navbar-links" id="navbarLinks">
-                    <!-- Will be populated by JavaScript -->
-                </div>
+    
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="/" class="navbar-brand">
+                <i class="fas fa-utensils"></i> Payona
+            </a>
+            <div class="navbar-links" id="navbarLinks">
+                <!-- Javascript ile doldurulacak -->
             </div>
-        </nav>
-
-        <main class="main-content">
-            @RenderBody()
-        </main>
-
-        <footer style="text-align: center; padding: 2rem; color: var(--text-secondary);">
-            <p>&copy; 2025 Payona - Öğrenci Yemek Paylaşım Platformu</p>
-        </footer>
-    </div>
-
+        </div>
+    </nav>
+    <!-- İÇERİK -->
+    <main class="main-content">
+        @RenderBody()
+    </main>
+    <!-- FOOTER -->
+    <footer>
+        <p>&copy; 2025 Payona - Öğrenci Yemek Paylaşım Platformu</p>
+    </footer>
+    <!-- TEMA SCRIPTI -->
+    <script>
+        (function initTheme() {
+            const savedTheme = localStorage.getItem('payona_theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+            }
+        })();
+        
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+            const isDark = document.body.classList.contains('dark-theme');
+            localStorage.setItem('payona_theme', isDark ? 'dark' : 'light');
+            updateThemeIcon(isDark);
+        }
+        
+        function updateThemeIcon(isDark) {
+            const btn = document.getElementById('themeToggle');
+            if(btn) {
+                btn.innerHTML = isDark 
+                    ? '<i class="fas fa-sun"></i>' 
+                    : '<i class="fas fa-moon"></i>';
+            }
+        }
+    </script>
+    <!-- AUTH VE NAVİGASYON SCRIPTI -->
     <script type="module">
         import { authService } from '/js/modules/auth.js';
-        import { themeService } from '/js/modules/theme.js';
-        import { chatService } from '/js/modules/chat.js';
-
-        // Initialize theme
-        themeService.init();
-        themeService.updateToggleButton();
-
-        // Setup navigation
+        
         const navbarLinks = document.getElementById('navbarLinks');
         const user = authService.getCurrentUser();
         const isAuthenticated = authService.isAuthenticated();
 
-        // Update unread message count
-        async function updateUnreadCount() {
-            try {
-                const count = await chatService.getUnreadCount();
-                const badge = document.getElementById('unreadBadge');
-                if (badge) {
-                    if (count > 0) {
-                        badge.textContent = count > 99 ? '99+' : count;
-                        badge.classList.remove('hidden');
-                    } else {
-                        badge.classList.add('hidden');
-                    }
-                }
-            } catch (error) {
-                console.error('Error updating unread count:', error);
-            }
-        }
-
         if (isAuthenticated && user) {
+            // == GİRİŞ YAPMIŞ KULLANICI ==
             navbarLinks.innerHTML = `
                 <a href="/Dashboard" class="nav-link">Ana Sayfa</a>
-                <a href="/Messages" class="nav-link" id="messagesLink" style="position: relative;">
-                    Mesajlar
-                    <span id="unreadBadge" class="unread-badge hidden" style="position: absolute; top: -8px; right: -8px; background: var(--accent-danger); color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold;">0</span>
-                </a>
                 <a href="/Profile" class="nav-link">Profil</a>
-                <button class="theme-toggle btn btn-secondary" id="themeToggle" style="padding: 0.5rem;">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6" style="width: 1.25rem; height: 1.25rem;">
-                        <path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10 10 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clip-rule="evenodd"/>
-                    </svg>
+                
+                <button class="theme-toggle" id="themeToggle" title="Modu Değiştir" style="margin-left:5px;">
+                    <i class="fas fa-moon"></i>
                 </button>
-                <button class="btn btn-secondary" id="logoutBtn">Çıkış Yap</button>
+                
+                <button class="btn-logout" id="logoutBtn">Çıkış</button>
             `;
             
-            // Load unread message count
-            updateUnreadCount();
-            // Update every 10 seconds
-            setInterval(updateUnreadCount, 10000);
-            
-            // Add logout event listener
-            document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+            document.getElementById('logoutBtn').addEventListener('click', async () => {
                 await authService.logout();
+                window.location.href = '/';
             });
         } else {
+            // == MİSAFİR KULLANICI (Giriş Yapmamış) ==
+            // Burada Kayıt Ol butonu artık ?mode=register parametresiyle yönlendiriyor
             navbarLinks.innerHTML = `
                 <a href="/" class="nav-link">Giriş</a>
-                <button class="theme-toggle btn btn-secondary" id="themeToggle" style="padding: 0.5rem;">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6" style="width: 1.25rem; height: 1.25rem;">
-                        <path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10 10 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clip-rule="evenodd"/>
-                    </svg>
+                
+                <a href="/?mode=register" class="btn-nav-register">Kayıt Ol</a>
+                
+                <button class="theme-toggle" id="themeToggle" title="Modu Değiştir" style="margin-left: 10px;">
+                    <i class="fas fa-moon"></i>
                 </button>
             `;
         }
 
-        // Theme toggle handler
-        document.getElementById('themeToggle')?.addEventListener('click', () => {
-            themeService.toggle();
-        });
+        setTimeout(() => {
+            const themeBtn = document.getElementById('themeToggle');
+            if (themeBtn) {
+                themeBtn.addEventListener('click', toggleTheme);
+                const isDark = document.body.classList.contains('dark-theme');
+                updateThemeIcon(isDark);
+            }
+        }, 100);
     </script>
-
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
-

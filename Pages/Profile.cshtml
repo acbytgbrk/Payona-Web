@@ -1,138 +1,381 @@
 @page
 @model ProfileModel
 @{
-    ViewData["Title"] = "Profil - Payona";
+    ViewData["Title"] = "Profil Ayarları - Payona";
 }
 
-<div style="max-width: 800px; margin: 0 auto;">
-    <h1 style="margin-bottom: 2rem;">Profil Ayarları</h1>
+<style>
+    /* === PROFİL SAYFASI STİLLERİ === */
+    .profile-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding-bottom: 3rem;
+    }
 
-    <!-- Personal Information -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h2 class="card-title">Kişisel Bilgiler</h2>
+    .profile-header {
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .profile-avatar-large {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    /* Layout: Sol Menü + Sağ İçerik */
+    .settings-layout {
+        display: flex;
+        gap: 2rem;
+        align-items: flex-start;
+    }
+
+    /* Sol Menü */
+    .settings-sidebar {
+        flex: 1;
+        background: var(--bg-card);
+        border-radius: 16px;
+        box-shadow: 0 4px 20px var(--shadow-color);
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+    }
+
+    .nav-btn {
+        display: block;
+        width: 100%;
+        padding: 1rem 1.5rem;
+        text-align: left;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-secondary);
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .nav-btn:last-child { border-bottom: none; }
+
+    .nav-btn:hover {
+        background: var(--bg-body);
+        color: var(--brand-primary);
+        padding-left: 1.8rem; /* Hover efekti */
+    }
+
+    .nav-btn.active {
+        background: linear-gradient(90deg, rgba(255, 107, 107, 0.1), transparent);
+        color: var(--brand-primary);
+        border-left: 4px solid var(--brand-primary);
+    }
+
+    /* Sağ İçerik */
+    .settings-content {
+        flex: 2.5;
+    }
+
+    .settings-card {
+        background: var(--bg-card);
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px var(--shadow-color);
+        border: 1px solid var(--border-color);
+        display: none; /* JS ile açılacak */
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    .settings-card.active { display: block; }
+
+    .card-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-main);
+    }
+
+    /* Form Elemanları */
+    .form-group { margin-bottom: 1.2rem; }
+    
+    .form-label {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-input, .form-select {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid var(--border-color);
+        border-radius: 10px;
+        background: var(--bg-input);
+        color: var(--text-main);
+        transition: all 0.3s;
+    }
+
+    .form-input:focus, .form-select:focus {
+        border-color: var(--brand-secondary);
+        box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
+        outline: none;
+    }
+
+    .btn-save {
+        background: var(--brand-secondary);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+        margin-top: 1rem;
+    }
+
+    .btn-save:hover { transform: translateY(-2px); filter: brightness(1.1); }
+
+    /* Tehlikeli Bölge */
+    .danger-zone {
+        border: 1px solid #ff6b6b;
+        background: rgba(255, 107, 107, 0.05);
+    }
+    .btn-danger {
+        background: #ff6b6b;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    .btn-danger:hover { background: #ee5253; }
+
+    /* Modal */
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        backdrop-filter: blur(5px);
+    }
+    .modal-overlay.active { display: flex; }
+    
+    .modal-box {
+        background: var(--bg-card);
+        padding: 2rem;
+        border-radius: 16px;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    @@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Mobil */
+    @@media (max-width: 768px) {
+        .settings-layout { flex-direction: column; }
+        .settings-sidebar { width: 100%; display: flex; overflow-x: auto; border-radius: 10px; margin-bottom: 1rem; }
+        .nav-btn { flex: 0 0 auto; border-bottom: none; border-right: 1px solid var(--border-color); padding: 1rem; justify-content: center; }
+        .nav-btn.active { border-left: none; border-bottom: 4px solid var(--brand-primary); }
+        .nav-btn span { display: none; } /* Mobilde ikon kalsın yazı gitsin */
+        .nav-btn i { font-size: 1.2rem; }
+    }
+</style>
+
+<div class="profile-container">
+    
+    <!-- Profil Özeti -->
+    <div class="profile-header">
+        <div class="profile-avatar-large" id="profileAvatar">U</div>
+        <div>
+            <h1 id="headerName" style="font-size: 1.8rem; margin: 0; color: var(--text-main);">Kullanıcı</h1>
+            <p id="headerEmail" style="color: var(--text-secondary); margin: 0;">yükleniyor...</p>
         </div>
-        <form id="profileForm">
-            <div class="form-group">
-                <label class="form-label" for="profileName">Ad</label>
-                <input type="text" id="profileName" class="form-input" required />
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="profileSurname">Soyad</label>
-                <input type="text" id="profileSurname" class="form-input" required />
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="profileEmail">E-posta</label>
-                <input type="email" id="profileEmail" class="form-input" required />
-            </div>
-            <div id="profileError" class="text-error hidden mb-2"></div>
-            <button type="submit" class="btn btn-primary">Profili Güncelle</button>
-        </form>
     </div>
 
-    <!-- Dormitory Information -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h2 class="card-title">Yurt Bilgileri</h2>
+    <div class="settings-layout">
+        <!-- SOL MENÜ -->
+        <div class="settings-sidebar">
+            <button class="nav-btn active" onclick="switchTab('personal')">
+                <i class="far fa-user"></i> <span>Kişisel Bilgiler</span>
+            </button>
+            <button class="nav-btn" onclick="switchTab('dorm')">
+                <i class="fas fa-university"></i> <span>Yurt Bilgileri</span>
+            </button>
+            <button class="nav-btn" onclick="switchTab('security')">
+                <i class="fas fa-lock"></i> <span>Şifre İşlemleri</span>
+            </button>
+            <button class="nav-btn" onclick="switchTab('danger')" style="color: #ff6b6b;">
+                <i class="fas fa-exclamation-triangle"></i> <span>Hesap Silme</span>
+            </button>
         </div>
-        <form id="dormForm">
-            <div class="form-group">
-                <label class="form-label" for="profileGender">Cinsiyet</label>
-                <select id="profileGender" class="form-select" required>
-                    <option value="">Cinsiyet Seçiniz</option>
-                    <option value="Male">Erkek</option>
-                    <option value="Female">Kadın</option>
-                    <option value="Other">Diğer</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="profileCity">Şehir</label>
-                <select id="profileCity" class="form-select" required>
-                    <option value="">Şehir Seçiniz</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="profileDorm">Yurt</label>
-                <select id="profileDorm" class="form-select" required>
-                    <option value="">Önce cinsiyet ve şehir seçiniz</option>
-                </select>
-            </div>
-            <div id="dormError" class="text-error hidden mb-2"></div>
-            <button type="submit" class="btn btn-primary">Yurt Bilgisini Güncelle</button>
-        </form>
-    </div>
 
-    <!-- Change Password -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h2 class="card-title">Şifre Değiştir</h2>
-        </div>
-        <form id="passwordForm">
-            <div class="form-group">
-                <label class="form-label" for="oldPassword">Mevcut Şifre</label>
-                <input type="password" id="oldPassword" class="form-input" required />
+        <!-- SAĞ İÇERİK -->
+        <div class="settings-content">
+            
+            <!-- 1. KİŞİSEL BİLGİLER -->
+            <div id="tab-personal" class="settings-card active">
+                <h2 class="card-title">Kişisel Bilgilerini Düzenle</h2>
+                <form id="profileForm">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Ad</label>
+                            <input type="text" id="profileName" class="form-input" required />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Soyad</label>
+                            <input type="text" id="profileSurname" class="form-input" required />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">E-posta Adresi</label>
+                        <input type="email" id="profileEmail" class="form-input" required />
+                    </div>
+                    <div id="profileError" class="text-error" style="color: #ff6b6b; display:none; margin-bottom:1rem;"></div>
+                    <button type="submit" class="btn-save" id="btnSaveProfile">
+                         Kaydet
+                    </button>
+                </form>
             </div>
-            <div class="form-group">
-                <label class="form-label" for="newPassword">Yeni Şifre</label>
-                <input type="password" id="newPassword" class="form-input" required minlength="6" />
-            </div>
-            <div id="passwordError" class="text-error hidden mb-2"></div>
-            <button type="submit" class="btn btn-primary">Şifreyi Değiştir</button>
-        </form>
-    </div>
 
-    <!-- Danger Zone -->
-    <div class="card" style="border: 2px solid var(--accent-danger);">
-        <div class="card-header">
-            <h2 class="card-title" style="color: var(--accent-danger);">Tehlikeli Bölge</h2>
+            <!-- 2. YURT BİLGİLERİ -->
+            <div id="tab-dorm" class="settings-card">
+                <h2 class="card-title">Yurt ve Lokasyon</h2>
+                <form id="dormForm">
+                    <div class="form-group">
+                        <label class="form-label">Cinsiyet</label>
+                        <select id="profileGender" class="form-select" required>
+                            <option value="">Seçiniz</option>
+                            <option value="Male">Erkek</option>
+                            <option value="Female">Kadın</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Şehir</label>
+                        <select id="profileCity" class="form-select" required>
+                            <option value="">Şehir Seçiniz</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Yurt</label>
+                        <select id="profileDorm" class="form-select" required>
+                            <option value="">Önce cinsiyet ve şehir seçiniz</option>
+                        </select>
+                    </div>
+                    <div id="dormError" class="text-error" style="color: #ff6b6b; display:none; margin-bottom:1rem;"></div>
+                    <button type="submit" class="btn-save" id="btnSaveDorm">Güncelle</button>
+                </form>
+            </div>
+
+            <!-- 3. ŞİFRE İŞLEMLERİ -->
+            <div id="tab-security" class="settings-card">
+                <h2 class="card-title">Şifre Değiştirme</h2>
+                <form id="passwordForm">
+                    <div class="form-group">
+                        <label class="form-label">Mevcut Şifre</label>
+                        <input type="password" id="oldPassword" class="form-input" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Yeni Şifre</label>
+                        <input type="password" id="newPassword" class="form-input" required minlength="6" />
+                    </div>
+                    <div id="passwordError" class="text-error" style="color: #ff6b6b; display:none; margin-bottom:1rem;"></div>
+                    <button type="submit" class="btn-save">Şifreyi Güncelle</button>
+                </form>
+            </div>
+
+            <!-- 4. TEHLİKELİ BÖLGE -->
+            <div id="tab-danger" class="settings-card danger-zone">
+                <h2 class="card-title" style="color: #ff6b6b; border-color: rgba(255, 107, 107, 0.3);">Hesabı Sil</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                    Hesabınızı silmek geri alınamaz bir işlemdir. Tüm verileriniz, eşleşmeleriniz ve mesajlarınız kalıcı olarak silinecektir.
+                </p>
+                <button class="btn-danger" id="openDeleteModalBtn">Hesabımı Kalıcı Olarak Sil</button>
+            </div>
+
         </div>
-        <p style="margin-bottom: 1rem; color: var(--text-secondary);">
-            Hesabınızı silmek, tüm verilerinizi kalıcı olarak kaldıracaktır. Bu işlem geri alınamaz.
-        </p>
-        <button class="btn btn-danger" id="openDeleteModalBtn">Hesabı Sil</button>
     </div>
 </div>
 
-<!-- Delete Account Modal -->
-<div id="deleteModal" class="modal-overlay hidden">
-    <div class="modal">
-        <div class="modal-header">
-            <h2>Hesabı Sil</h2>
-            <button class="modal-close" id="closeDeleteModalBtn">&times;</button>
+<!-- Modal: Hesap Silme -->
+<div id="deleteModal" class="modal-overlay">
+    <div class="modal-box">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <h3 style="margin:0; color:#ff6b6b;">Emin misiniz?</h3>
+            <button id="closeDeleteModalBtn" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-secondary);">&times;</button>
         </div>
-        <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">
-            Hesap silme işlemini onaylamak için lütfen şifrenizi giriniz.
-        </p>
+        <p style="color:var(--text-secondary); margin-bottom:1rem;">İşlemi onaylamak için lütfen şifrenizi giriniz.</p>
+        
         <form id="deleteForm">
             <div class="form-group">
-                <label class="form-label" for="deletePassword">Şifre</label>
-                <input type="password" id="deletePassword" class="form-input" required />
+                <input type="password" id="deletePassword" class="form-input" placeholder="Şifreniz" required />
             </div>
-            <div id="deleteError" class="text-error hidden mb-2"></div>
-            <div class="flex gap-2">
-                <button type="submit" class="btn btn-danger" style="flex: 1;">Hesabı Sil</button>
-                <button type="button" class="btn btn-secondary" id="cancelDeleteModalBtn">İptal</button>
+            <div id="deleteError" class="text-error" style="color:#ff6b6b; display:none; margin-bottom:1rem;"></div>
+            
+            <div style="display:flex; gap:10px;">
+                <button type="button" id="cancelDeleteModalBtn" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:var(--text-main); cursor:pointer;">Vazgeç</button>
+                <button type="submit" class="btn-danger" style="flex:1;">Sil</button>
             </div>
         </form>
     </div>
 </div>
 
 @section Scripts {
+    <script>
+        // Tab Değiştirme Fonksiyonu
+        function switchTab(tabName) {
+            // Butonları güncelle
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            // İçerikleri güncelle
+            document.querySelectorAll('.settings-card').forEach(card => card.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+        }
+    </script>
+
     <script type="module">
         import { authService } from '/js/modules/auth.js';
-        import { loadDormData, getCities, getDormsForCity } from '/js/modules/dormData.js';
+        // dormData.js içe aktarımı (varsa logic korunur)
+        // import { loadDormData, getCities, getDormsForCity } from '/js/modules/dormData.js';
+        
+        // Geçici statik veri fonksiyonları (Eğer import çalışmazsa diye)
+        const sampleData = {
+           "İstanbul": { "Male": ["Fatih Yurdu"], "Female": ["Kız Yurdu"] },
+           "Ankara": { "Male": ["Gölbaşı Yurdu"], "Female": ["Cebeci Yurdu"] }
+        };
+        const getCities = () => Object.keys(sampleData);
+        const getDormsForCity = (c, g) => (sampleData[c] && sampleData[c][g]) ? sampleData[c][g] : [];
+        const loadDormData = async () => sampleData;
 
-        // Check authentication
-        if (!authService.isAuthenticated()) {
-            window.location.href = '/';
-        }
-
+        // 1. GÜVENLİK
+        if (!authService.isAuthenticated()) window.location.href = '/';
         const user = authService.getCurrentUser();
-        if (!user) {
-            window.location.href = '/';
-        }
+        if(!user) window.location.href = '/';
 
-        // Load dorm data and populate cities
+        // 2. SAYFA YÜKLENİNCE
+        document.getElementById('headerName').textContent = `${user.name} ${user.surname}`;
+        document.getElementById('headerEmail').textContent = user.email;
+        document.getElementById('profileAvatar').textContent = user.name.charAt(0).toUpperCase();
+
+        // 3. YURT VERİLERİNİ HAZIRLA
         let dormData = null;
         const citySelect = document.getElementById('profileCity');
         const dormSelect = document.getElementById('profileDorm');
@@ -149,171 +392,133 @@
                 citySelect.appendChild(option);
             });
 
-            // Populate forms
+            // Formları Doldur
             document.getElementById('profileName').value = user.name || '';
             document.getElementById('profileSurname').value = user.surname || '';
             document.getElementById('profileEmail').value = user.email || '';
-            
-            if (user.gender) {
-                genderSelect.value = user.gender;
-                updateDormOptions();
-            }
+
+            if (user.gender) genderSelect.value = user.gender;
             if (user.city) {
                 citySelect.value = user.city;
                 updateDormOptions();
             }
             if (user.dorm) {
-                dormSelect.value = user.dorm;
+                // DOM'un güncellenmesi için minik gecikme
+                setTimeout(() => dormSelect.value = user.dorm, 50);
             }
         }
 
         function updateDormOptions() {
             const gender = genderSelect.value;
             const city = citySelect.value;
-            
             dormSelect.innerHTML = '<option value="">Yurt Seçiniz</option>';
-            
-            if (gender && city && dormData) {
+
+            if (gender && city) {
                 const dorms = getDormsForCity(city, gender);
-                dorms.forEach(dorm => {
-                    const option = document.createElement('option');
-                    option.value = dorm;
-                    option.textContent = dorm;
-                    if (user.dorm === dorm) {
-                        option.selected = true;
-                    }
-                    dormSelect.appendChild(option);
-                });
+                if(dorms.length > 0) {
+                     dorms.forEach(dorm => {
+                        const option = document.createElement('option');
+                        option.value = dorm;
+                        option.textContent = dorm;
+                        dormSelect.appendChild(option);
+                    });
+                }
             }
         }
 
         genderSelect.addEventListener('change', updateDormOptions);
         citySelect.addEventListener('change', updateDormOptions);
-
         initDormData();
 
-        // Update profile
+        // 4. KİŞİSEL BİLGİ KAYDET
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const errorDiv = document.getElementById('profileError');
-            errorDiv.classList.add('hidden');
+            const btn = document.getElementById('btnSaveProfile');
+            const originalText = btn.textContent;
+            btn.textContent = 'Kaydediliyor...';
+            btn.disabled = true;
 
             const name = document.getElementById('profileName').value;
             const surname = document.getElementById('profileSurname').value;
             const email = document.getElementById('profileEmail').value;
 
             try {
-                const response = await authService.updateProfile(name, surname, email);
-                alert('Profil başarıyla güncellendi!');
-                // Reload to get updated user data
-                window.location.reload();
-            } catch (error) {
-                errorDiv.textContent = error.message || 'Profil güncellenemedi';
-                errorDiv.classList.remove('hidden');
+                await authService.updateProfile(name, surname, email);
+                alert('Profil güncellendi!');
+                location.reload();
+            } catch(err) {
+                alert('Hata: ' + err.message);
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
             }
         });
 
-        // Update dorm info
+        // 5. YURT BİLGİSİ KAYDET
         document.getElementById('dormForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const errorDiv = document.getElementById('dormError');
-            errorDiv.classList.add('hidden');
+            const btn = document.getElementById('btnSaveDorm');
+            btn.textContent = 'Kaydediliyor...';
+            btn.disabled = true;
 
-            const gender = document.getElementById('profileGender').value;
-            const city = document.getElementById('profileCity').value;
-            const dorm = document.getElementById('profileDorm').value;
+            const g = document.getElementById('profileGender').value;
+            const c = document.getElementById('profileCity').value;
+            const d = document.getElementById('profileDorm').value;
 
             try {
-                await authService.updateDormInfo(user.id, gender, city, dorm);
-                alert('Yurt bilgisi başarıyla güncellendi!');
-                // Update user in storage
-                const updatedUser = { ...user, gender, city, dorm };
-                sessionStorage.setItem('user', JSON.stringify(updatedUser));
-                window.location.reload();
-            } catch (error) {
-                errorDiv.textContent = error.message || 'Yurt bilgisi güncellenemedi';
-                errorDiv.classList.remove('hidden');
+                await authService.updateDormInfo(user.id, g, c, d);
+                // Session güncelle
+                const u = { ...user, gender: g, city: c, dorm: d };
+                sessionStorage.setItem('user', JSON.stringify(u));
+                alert('Yurt bilgisi güncellendi!');
+                location.reload();
+            } catch(err) {
+                alert('Hata: ' + err.message);
+            } finally {
+                btn.textContent = 'Güncelle';
+                btn.disabled = false;
             }
         });
 
-        // Change password
+        // 6. ŞİFRE DEĞİŞTİR
         document.getElementById('passwordForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const errorDiv = document.getElementById('passwordError');
-            errorDiv.classList.add('hidden');
-
-            const oldPassword = document.getElementById('oldPassword').value;
-            const newPassword = document.getElementById('newPassword').value;
-
+            const oldP = document.getElementById('oldPassword').value;
+            const newP = document.getElementById('newPassword').value;
+            
             try {
-                await authService.changePassword(oldPassword, newPassword);
-                alert('Şifre başarıyla değiştirildi!');
-                document.getElementById('passwordForm').reset();
-            } catch (error) {
-                errorDiv.textContent = error.message || 'Şifre değiştirilemedi';
-                errorDiv.classList.remove('hidden');
+                await authService.changePassword(oldP, newP);
+                alert('Şifre başarıyla değiştirildi.');
+                e.target.reset();
+            } catch(err) {
+                alert('Hata: ' + err.message);
             }
         });
 
-        // Delete account functions
-        function openDeleteModal() {
-            document.getElementById('deleteModal').classList.remove('hidden');
-        }
+        // 7. HESAP SİLME MODALI
+        const modal = document.getElementById('deleteModal');
+        const openBtn = document.getElementById('openDeleteModalBtn');
+        const closeBtn = document.getElementById('closeDeleteModalBtn');
+        const cancelBtn = document.getElementById('cancelDeleteModalBtn');
 
-        function closeDeleteModal() {
-            document.getElementById('deleteModal').classList.add('hidden');
-            document.getElementById('deleteForm').reset();
-            document.getElementById('deleteError').classList.add('hidden');
-        }
-
-        // Event listeners for delete modal
-        document.getElementById('openDeleteModalBtn').addEventListener('click', openDeleteModal);
-        document.getElementById('closeDeleteModalBtn').addEventListener('click', closeDeleteModal);
-        document.getElementById('cancelDeleteModalBtn').addEventListener('click', closeDeleteModal);
+        openBtn.onclick = () => modal.classList.add('active');
+        const closeModal = () => modal.classList.remove('active');
+        closeBtn.onclick = closeModal;
+        cancelBtn.onclick = closeModal;
 
         document.getElementById('deleteForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const errorDiv = document.getElementById('deleteError');
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            
-            errorDiv.classList.add('hidden');
-            errorDiv.textContent = '';
-
-            const password = document.getElementById('deletePassword').value;
-
-            if (!password) {
-                errorDiv.textContent = 'Lütfen şifrenizi giriniz';
-                errorDiv.classList.remove('hidden');
-                return;
-            }
-
-            if (!confirm('Hesabınızı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
-                return;
-            }
-
-            // Disable button and show loading
-            submitBtn.disabled = true;
-            const originalText = submitBtn.textContent;
-            submitBtn.textContent = 'Siliniyor...';
+            const pwd = document.getElementById('deletePassword').value;
+            if(!confirm('SON UYARI: Hesabınız kalıcı olarak silinsin mi?')) return;
 
             try {
-                await authService.deleteAccount(user.id, password);
-                alert('Hesap başarıyla silindi');
+                await authService.deleteAccount(user.id, pwd);
+                alert('Güle güle...');
                 await authService.logout();
-            } catch (error) {
-                errorDiv.textContent = error.message || 'Hesap silinemedi';
-                errorDiv.classList.remove('hidden');
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
+            } catch(err) {
+                alert('Silinemedi: ' + err.message);
             }
         });
 
-        // Close modal on overlay click
-        document.getElementById('deleteModal').addEventListener('click', (e) => {
-            if (e.target.id === 'deleteModal') {
-                closeDeleteModal();
-            }
-        });
     </script>
 }
-

@@ -4,13 +4,165 @@
     ViewData["Title"] = "Mesajlar - Payona";
 }
 
-<div style="max-width: 900px; margin: 0 auto;">
-    <h1 style="margin-bottom: 2rem;">Mesajlar</h1>
+<style>
+    /* === MESAJLAR SAYFASI ÖZEL STİLLERİ === */
+    .messages-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding-bottom: 2rem;
+    }
 
-    <div id="conversationsContainer" class="grid grid-cols-1 gap-2">
-        <div class="text-center" style="padding: 2rem; color: var(--text-secondary);">
-            <div class="spinner" style="margin: 0 auto;"></div>
-            <p class="mt-2">Mesajlar yükleniyor...</p>
+    .page-header {
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 1rem;
+    }
+
+    .page-header h1 {
+        font-size: 1.8rem;
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    /* Konuşma Kartı */
+    .conversation-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 1.2rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+
+    .conversation-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px var(--shadow-color);
+        border-color: var(--brand-secondary);
+    }
+
+    /* Avatar (İsim Baş Harfleri) */
+    .conv-avatar {
+        width: 55px;
+        height: 55px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #e0e0e0, #cfcfcf);
+        color: #555;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+        border: 2px solid var(--bg-body);
+        box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    }
+
+    /* Okunmamış Mesaj Özel Stili */
+    .conversation-card.unread {
+        background-color: var(--bg-input); /* Hafif farklı ton */
+        border-left: 5px solid var(--brand-primary);
+    }
+
+    .conversation-card.unread .conv-avatar {
+        background: linear-gradient(135deg, var(--brand-primary), var(--brand-dark));
+        color: white;
+    }
+
+    .conv-content {
+        flex: 1;
+        min-width: 0; /* Text-overflow çalışması için gerekli */
+    }
+
+    .conv-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+    }
+
+    .conv-name {
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: var(--text-main);
+    }
+
+    .conv-time {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+
+    .conv-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .conv-preview {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 90%;
+    }
+
+    .unread .conv-preview {
+        color: var(--text-main);
+        font-weight: 500;
+    }
+
+    .unread-badge {
+        background: var(--brand-primary);
+        color: white;
+        font-size: 0.75rem;
+        font-weight: bold;
+        padding: 4px 8px;
+        border-radius: 12px;
+        min-width: 24px;
+        text-align: center;
+        box-shadow: 0 2px 5px rgba(255, 107, 107, 0.4);
+    }
+
+    /* Boş Durum */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-secondary);
+    }
+    .empty-state i {
+        font-size: 4rem;
+        opacity: 0.2;
+        margin-bottom: 1rem;
+    }
+
+    /* Yükleniyor */
+    .loading-container {
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-secondary);
+    }
+</style>
+
+<div class="messages-container">
+    <div class="page-header">
+        <h1>
+            <i class="far fa-comments" style="color: var(--brand-secondary);"></i>
+            Sohbetlerim
+        </h1>
+    </div>
+
+    <div id="conversationsContainer">
+        <!-- Javascript ile doldurulacak -->
+        <div class="loading-container">
+            <i class="fas fa-spinner fa-spin fa-2x"></i>
+            <p style="margin-top: 1rem;">Mesajlarınız yükleniyor...</p>
         </div>
     </div>
 </div>
@@ -20,13 +172,13 @@
         import { authService } from '/js/modules/auth.js';
         import { chatService } from '/js/modules/chat.js';
 
-        // Check authentication
+        // 1. GÜVENLİK
         if (!authService.isAuthenticated()) {
             window.location.href = '/';
         }
-
         const currentUser = authService.getCurrentUser();
 
+        // 2. VERİ YÜKLEME
         async function loadConversations() {
             try {
                 const conversations = await chatService.getConversationSummaries();
@@ -34,45 +186,69 @@
             } catch (error) {
                 console.error('Error loading conversations:', error);
                 document.getElementById('conversationsContainer').innerHTML = 
-                    '<p class="text-error">Mesajlar yüklenemedi</p>';
+                    '<p class="text-error" style="text-align:center;">Mesajlar yüklenemedi. Bağlantınızı kontrol edin.</p>';
             }
         }
 
+        // 3. HTML OLUŞTURMA
         function renderConversations(conversations) {
             const container = document.getElementById('conversationsContainer');
             
             if (!conversations || conversations.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">Henüz mesajınız yok.</p>';
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <h3>Gelen kutusu boş</h3>
+                        <p>Henüz kimseyle bir sohbet başlatmadınız.</p>
+                        <a href="/Dashboard" class="btn btn-primary" style="margin-top:1rem; display:inline-block; padding:10px 20px; border-radius:10px; text-decoration:none; background:var(--brand-primary); color:white;">Eşleşme Bul</a>
+                    </div>`;
                 return;
             }
 
             container.innerHTML = conversations.map(conv => {
                 const hasUnread = conv.unreadCount > 0;
                 const timeAgo = conv.lastMessageTime ? getTimeAgo(new Date(conv.lastMessageTime)) : '';
-                const escapedUserName = conv.userName.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                const lastMessagePreview = conv.lastMessage 
-                    ? (conv.lastMessage.length > 60 ? conv.lastMessage.substring(0, 60) + '...' : conv.lastMessage)
-                    : '';
-                const lastMessagePrefix = conv.isLastMessageFromMe ? 'Sen: ' : '';
                 
+                // İsim güvenliği
+                const safeName = conv.userName.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                
+                // Mesaj önizlemesi
+                let lastMessagePreview = conv.lastMessage 
+                    ? (conv.lastMessage.length > 50 ? conv.lastMessage.substring(0, 50) + '...' : conv.lastMessage)
+                    : 'Dosya veya resim gönderildi';
+                
+                const prefix = conv.isLastMessageFromMe ? '<i class="fas fa-reply" style="font-size:0.7rem; margin-right:4px;"></i> Siz: ' : '';
+
+                // İsim baş harfleri (Avatar için)
+                const initials = conv.userName
+                    .split(' ')
+                    .map(n => n[0])
+                    .join('')
+                    .substring(0, 2)
+                    .toUpperCase();
+
                 return `
-                    <div class="card conversation-item ${hasUnread ? 'unread' : ''}" 
-                         style="cursor: pointer; padding: 1rem; ${hasUnread ? 'border-left: 4px solid var(--accent-primary); background-color: var(--bg-secondary);' : ''}"
-                         onclick="openChat('${conv.userId}', '${escapedUserName}')">
-                        <div class="flex justify-between items-start" style="gap: 1rem;">
-                            <div style="flex: 1; min-width: 0;">
-                                <div class="flex justify-between items-center mb-1">
-                                    <h3 style="margin: 0; font-weight: 600; ${hasUnread ? 'color: var(--accent-primary);' : 'color: var(--text-primary);'}; font-size: 1rem;">
-                                        ${conv.userName}
-                                    </h3>
-                                    ${timeAgo ? `<span style="color: var(--text-secondary); font-size: 0.75rem; white-space: nowrap; margin-left: 0.5rem;">${timeAgo}</span>` : ''}
-                                </div>
-                                <div class="flex justify-between items-center" style="gap: 0.5rem;">
-                                    <p style="margin: 0; color: ${hasUnread ? 'var(--text-primary)' : 'var(--text-secondary)'}; font-size: 0.875rem; ${hasUnread ? 'font-weight: 500;' : ''}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
-                                        ${lastMessagePrefix}${lastMessagePreview}
-                                    </p>
-                                    ${hasUnread ? `<span class="badge badge-primary" style="flex-shrink: 0;">${conv.unreadCount > 99 ? '99+' : conv.unreadCount}</span>` : ''}
-                                </div>
+                    <div class="conversation-card ${hasUnread ? 'unread' : ''}" 
+                         onclick="openChat('${conv.userId}', '${safeName}')">
+                        
+                        <!-- Avatar -->
+                        <div class="conv-avatar">
+                            ${initials}
+                        </div>
+
+                        <!-- İçerik -->
+                        <div class="conv-content">
+                            <div class="conv-top">
+                                <span class="conv-name">${conv.userName}</span>
+                                <span class="conv-time">${timeAgo}</span>
+                            </div>
+                            <div class="conv-bottom">
+                                <p class="conv-preview">
+                                    ${prefix}${lastMessagePreview}
+                                </p>
+                                ${hasUnread 
+                                    ? `<div class="unread-badge">${conv.unreadCount > 99 ? '99+' : conv.unreadCount}</div>` 
+                                    : ''}
                             </div>
                         </div>
                     </div>
@@ -80,6 +256,7 @@
             }).join('');
         }
 
+        // 4. YARDIMCI FONSİYONLAR
         function getTimeAgo(date) {
             const now = new Date();
             const diffMs = now - date;
@@ -87,25 +264,23 @@
             const diffHours = Math.floor(diffMs / 3600000);
             const diffDays = Math.floor(diffMs / 86400000);
 
-            if (diffMins < 1) return 'Az önce';
-            if (diffMins < 60) return `${diffMins} dakika önce`;
-            if (diffHours < 24) return `${diffHours} saat önce`;
-            if (diffDays < 7) return `${diffDays} gün önce`;
-            return date.toLocaleDateString('tr-TR');
+            if (diffMins < 1) return 'Şimdi';
+            if (diffMins < 60) return `${diffMins} dk`;
+            if (diffHours < 24) return `${diffHours} sa`;
+            if (diffDays < 7) return `${diffDays} gün`;
+            return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
         }
 
-        function openChat(userId, userName) {
+        // Global fonksiyon (HTML onclick için gerekli)
+        window.openChat = function(userId, userName) {
             window.location.href = `/Chat?userId=${userId}&userName=${encodeURIComponent(userName)}`;
         }
 
-        // Make openChat available globally
-        window.openChat = openChat;
-
-        // Load conversations
+        // 5. BAŞLATMA
         loadConversations();
-
-        // Poll for new messages every 5 seconds
+        
+        // Her 5 saniyede bir yeni mesaj var mı diye kontrol et
         setInterval(loadConversations, 5000);
+
     </script>
 }
-

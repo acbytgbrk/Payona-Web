@@ -4,127 +4,301 @@
     ViewData["Title"] = "Ana Sayfa - Payona";
 }
 
-<!-- İcon Kütüphanesi (Remix Icon) -->
+<!-- İkon Kütüphanesi -->
 <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 
-<div>
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <!-- Kullanıcı Adı Güncellemesi (ID eklendi ve JS ile doldurulacak) -->
-        <h1>Hoşgeldin, <span id="welcomeName">@(User.Identity?.Name ?? "Öğrenci")</span> 👋</h1>
+<style>
+    /* === DASHBOARD ÖZEL STİLLERİ === */
+    
+    /* İstatistik Kartları (Gradient) */
+    .stat-card {
+        padding: 1.5rem;
+        border-radius: 15px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        flex: 1;
+        min-width: 200px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s;
+    }
+    .stat-card:hover { transform: translateY(-5px); }
+    
+    .stat-card.blue { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    .stat-card.green { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+    .stat-card.purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+
+    .stat-value { font-size: 2rem; font-weight: 700; margin-top: 5px; }
+    .stat-label { font-size: 0.9rem; opacity: 0.9; }
+    .stat-icon { position: absolute; right: 15px; bottom: 15px; font-size: 3rem; opacity: 0.2; }
+
+    /* Ana Kartlar */
+    .dashboard-card {
+        background: var(--bg-card);
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 20px var(--shadow-color);
+        margin-bottom: 2rem;
+        border: 1px solid var(--border-color);
+    }
+
+    /* Talep Listesi Kartları */
+    .request-item {
+        background: var(--bg-input);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.2rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .request-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px var(--shadow-color);
+        border-color: var(--brand-primary);
+    }
+
+    /* Verme Talebi (Yeşil Çizgi) */
+    .request-item[data-request-type="fingerprint"] {
+        border-left: 5px solid #43e97b;
+    }
+    
+    /* Alma Talebi (Mavi Çizgi) */
+    .request-item[data-request-type="mealRequest"] {
+        border-left: 5px solid #4facfe;
+    }
+
+    .request-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .user-info { font-weight: 600; font-size: 1.1rem; color: var(--text-main); }
+    .meal-badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background: rgba(0,0,0,0.05);
+        color: var(--text-secondary);
+    }
+
+    /* Butonlar */
+    .action-btn {
+        padding: 0.8rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+        border: none;
+        cursor: pointer;
+        color: white;
+    }
+
+    .btn-give { background: linear-gradient(135deg, #43e97b, #38f9d7); box-shadow: 0 4px 10px rgba(67, 233, 123, 0.3); color: #1a472a; }
+    .btn-take { background: linear-gradient(135deg, #4facfe, #00f2fe); box-shadow: 0 4px 10px rgba(79, 172, 254, 0.3); color: #0f3460; }
+    
+    .btn-give:hover, .btn-take:hover { transform: translateY(-2px); filter: brightness(1.05); }
+
+    /* Modal (Popup) */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        backdrop-filter: blur(5px);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .modal-overlay.active { opacity: 1; visibility: visible; }
+
+    .modal-content {
+        background: var(--bg-card);
+        width: 100%;
+        max-width: 500px;
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        transform: scale(0.8);
+        transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.active .modal-content { transform: scale(1); }
+
+    /* Yükleniyor Spinner */
+    .spinner {
+        border: 3px solid rgba(0,0,0,0.1);
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border-left-color: var(--brand-primary);
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+    @@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Başlıklar */
+    h1, h2, h3 { color: var(--text-main); }
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 1.5rem;
+        font-size: 1.4rem;
+    }
+</style>
+
+<div class="container" style="max-width: 1200px; margin: 0 auto; padding-bottom: 3rem;">
+    
+    <!-- Üst Başlık ve Butonlar -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 style="font-size: 2rem; margin-bottom: 0.5rem;">Hoş geldin, <span id="welcomeName" style="color: var(--brand-primary);">@(User.Identity?.Name ?? "Öğrenci")</span> 👋</h1>
+            <p style="color: var(--text-secondary);">Bugün ne paylaşmak istersin?</p>
+        </div>
         
-        <div class="flex gap-2">
-            <!-- Verme Butonu İconu -->
-            <button class="btn btn-primary" id="createGiveBtn" data-type="give" style="display: flex; align-items: center; gap: 8px;">
-                <i class="ri-hand-heart-fill"></i> Verme Talebi Oluştur
+        <div style="display: flex; gap: 1rem;">
+            <button class="action-btn btn-give" id="createGiveBtn">
+                <i class="ri-hand-heart-fill"></i> Yemek Ver
             </button>
-            <!-- Alma Butonu İconu -->
-            <button class="btn btn-secondary" id="createTakeBtn" data-type="take" style="display: flex; align-items: center; gap: 8px;">
-                <i class="ri-restaurant-fill"></i> Alma Talebi Oluştur
+            <button class="action-btn btn-take" id="createTakeBtn">
+                <i class="ri-restaurant-fill"></i> Yemek Al
             </button>
         </div>
     </div>
 
-    <!-- Canvas Visualization -->
-    <div class="card mb-4">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <h2 class="card-title mb-0">Aktivite Özeti</h2>
-            <select id="periodSelect" class="form-select" style="width: auto; padding: 0.5rem;">
-                <option value="day">Gün</option>
-                <option value="week" selected>Hafta</option>
-                <option value="month">Ay</option>
-                <option value="year">Yıl</option>
+    <!-- İstatistik Kartları -->
+    <div style="display: flex; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap;">
+        <div class="stat-card blue">
+            <div class="stat-label">Toplam Talep</div>
+            <div class="stat-value" id="totalRequestsCreated">0</div>
+            <i class="ri-file-list-3-line stat-icon"></i>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-label">Başarılı Eşleşme</div>
+            <div class="stat-value" id="totalMatchesAccepted">0</div>
+            <i class="ri-check-double-line stat-icon"></i>
+        </div>
+        <div class="stat-card purple">
+            <div class="stat-label">Toplam Etkileşim</div>
+            <div class="stat-value" id="totalMatchesCreated">0</div>
+            <i class="ri-refresh-line stat-icon"></i>
+        </div>
+    </div>
+
+    <!-- Grafik Alanı -->
+    <div class="dashboard-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="font-size: 1.2rem;">Haftalık Aktivite</h2>
+            <select id="periodSelect" class="form-control" style="width: auto; padding: 0.5rem 1rem;">
+                <option value="day">Günlük</option>
+                <option value="week" selected>Haftalık</option>
+                <option value="month">Aylık</option>
+                <option value="year">Yıllık</option>
             </select>
         </div>
-        <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
-            <div style="padding: 0.75rem; background: var(--bg-secondary); border-radius: 0.5rem; flex: 1; min-width: 150px;">
-                <div style="font-size: 0.875rem; color: var(--text-secondary);">Oluşturulan Talep</div>
-                <div style="font-size: 1.5rem; font-weight: bold; color: var(--accent-primary);" id="totalRequestsCreated">0</div>
-            </div>
-            <div style="padding: 0.75rem; background: var(--bg-secondary); border-radius: 0.5rem; flex: 1; min-width: 150px;">
-                <div style="font-size: 0.875rem; color: var(--text-secondary);">Kabul Edilen Eşleşme</div>
-                <div style="font-size: 1.5rem; font-weight: bold; color: var(--accent-secondary);" id="totalMatchesAccepted">0</div>
-            </div>
-            <div style="padding: 0.75rem; background: var(--bg-secondary); border-radius: 0.5rem; flex: 1; min-width: 150px;">
-                <div style="font-size: 0.875rem; color: var(--text-secondary);">Toplam Eşleşme</div>
-                <div style="font-size: 1.5rem; font-weight: bold; color: var(--accent-primary);" id="totalMatchesCreated">0</div>
-            </div>
-        </div>
-        <canvas id="activityCanvas" width="800" height="200" style="width: 100%; max-width: 800px; height: 200px; border-radius: 0.5rem; background: var(--bg-secondary);"></canvas>
+        <canvas id="activityCanvas" style="width: 100%; height: 250px;"></canvas>
     </div>
 
-    <!-- My Requests Section -->
-    <section class="mb-4">
-        <!-- Taleplerim İconu -->
-        <h2 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;">
-            <i class="ri-user-star-line" style="color: var(--accent-primary);"></i> Taleplerim
-        </h2>
-        <div id="myRequests" class="grid grid-cols-1 gap-4">
-            <div class="text-center" style="padding: 2rem; color: var(--text-secondary);">
-                <div class="spinner" style="margin: 0 auto;"></div>
-                <p class="mt-2">Yükleniyor...</p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem;">
+        
+        <!-- Sol Sütun: Benim Taleplerim -->
+        <section>
+            <h2 class="section-title">
+                <i class="ri-user-star-line" style="color: var(--brand-primary);"></i> Senin Taleplerin
+            </h2>
+            <div id="myRequests">
+                <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 10px;">Yükleniyor...</p>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Other Students' Requests Section -->
-    <section>
-        <!-- Diğer Talepler İconu -->
-        <h2 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;">
-            <i class="ri-community-line" style="color: var(--accent-secondary);"></i> Diğer Öğrencilerin Talepleri
-        </h2>
-        <div id="otherRequests" class="grid grid-cols-1 gap-4">
-            <div class="text-center" style="padding: 2rem; color: var(--text-secondary);">
-                <div class="spinner" style="margin: 0 auto;"></div>
-                <p class="mt-2">Yükleniyor...</p>
+        <!-- Sağ Sütun: Diğer Öğrenciler -->
+        <section>
+            <h2 class="section-title">
+                <i class="ri-community-line" style="color: var(--brand-secondary);"></i> Kampüsteki Talepler
+            </h2>
+            <div id="otherRequests">
+                <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 10px;">Yükleniyor...</p>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
+    </div>
+
 </div>
 
-<!-- Create Request Modal -->
-<div id="createModal" class="modal-overlay hidden">
-    <div class="modal">
-        <div class="modal-header">
-            <h2 id="modalTitle">Talep Oluştur</h2>
-            <button class="modal-close" id="closeCreateModalBtn">&times;</button>
+<!-- MODAL: Talep Oluştur -->
+<div id="createModal" class="modal-overlay">
+    <div class="modal-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 id="modalTitle" style="font-size: 1.5rem;">Talep Oluştur</h2>
+            <button id="closeCreateModalBtn" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">&times;</button>
         </div>
+        
         <form id="createRequestForm">
             <input type="hidden" id="requestType" />
-            <div class="form-group">
-                <label class="form-label" for="mealType">Öğün Türü</label>
-                <select id="mealType" class="form-select" required>
-                    <option value="">Öğün Seçiniz</option>
+            
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Öğün Türü</label>
+                <select id="mealType" class="form-control" required>
+                    <option value="">Seçiniz...</option>
                     <option value="lunch">Öğle Yemeği</option>
                     <option value="dinner">Akşam Yemeği</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label class="form-label" for="preferredDate">Tercih Edilen Tarih (İsteğe Bağlı)</label>
-                <input type="date" id="preferredDate" class="form-input" />
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Tarih</label>
+                    <input type="date" id="preferredDate" class="form-control" />
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Saat Aralığı</label>
+                    <div style="display: flex; gap: 5px; align-items: center;">
+                        <input type="time" id="preferredStartTime" class="form-control" />
+                        <span>-</span>
+                        <input type="time" id="preferredEndTime" class="form-control" />
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label class="form-label" for="preferredStartTime">Başlangıç Saati (İsteğe Bağlı)</label>
-                <input type="time" id="preferredStartTime" class="form-input" />
+
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Notlar</label>
+                <textarea id="notes" class="form-control" rows="3" placeholder="Örn: Yemekhanede 2. turnike önünde olacağım..."></textarea>
             </div>
-            <div class="form-group">
-                <label class="form-label" for="preferredEndTime">Bitiş Saati (İsteğe Bağlı)</label>
-                <input type="time" id="preferredEndTime" class="form-input" />
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="notes">Notlar (İsteğe Bağlı)</label>
-                <textarea id="notes" class="form-textarea" placeholder="Ek bilgiler..."></textarea>
-            </div>
-            <div id="createError" class="text-error hidden mb-2"></div>
-            <div class="flex gap-2">
-                <button type="submit" class="btn btn-primary" style="flex: 1;" id="submitCreateBtn">
+
+            <div id="createError" class="text-error" style="display: none; color: #ff6b6b; margin-bottom: 1rem;"></div>
+
+            <div style="display: flex; gap: 1rem;">
+                <button type="button" class="btn-secondary" id="cancelCreateModalBtn" style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: transparent; color: var(--text-main); cursor: pointer;">İptal</button>
+                <button type="submit" id="submitCreateBtn" style="flex: 2; padding: 10px; border-radius: 8px; border: none; background: var(--brand-primary); color: white; cursor: pointer; font-weight: 600;">
                     <span class="btn-text">Oluştur</span>
-                    <span class="btn-loading hidden">Oluşturuluyor...</span>
+                    <span class="btn-loading" style="display: none;"><i class="fas fa-spinner fa-spin"></i></span>
                 </button>
-                <button type="button" class="btn btn-secondary" id="cancelCreateModalBtn">İptal</button>
             </div>
         </form>
     </div>
 </div>
+
 
 @section Scripts {
 <script type="module">
@@ -133,441 +307,306 @@
     import { fingerprintService } from '/js/modules/fingerprint.js';
     import { matchService } from '/js/modules/match.js';
 
-    // Check authentication
+    // === 1. GÜVENLİK KONTROLÜ ===
     if (!authService.isAuthenticated()) {
         window.location.href = '/';
     }
-
     const user = authService.getCurrentUser();
     if (authService.requiresDormInfo()) {
         window.location.href = '/DormInfo';
     }
 
-    // --- KULLANICI ADINI DÜZELTME KODU ---
-    // Eğer JS tarafında kullanıcı ismi varsa, başlıktaki "Öğrenci" yazısını değiştir.
+    // === 2. KULLANICI ADI GÖSTERİMİ ===
     if (user && user.name) {
-        const welcomeSpan = document.getElementById('welcomeName');
-        if (welcomeSpan) {
-            welcomeSpan.textContent = user.name;
-        }
+        document.getElementById('welcomeName').textContent = user.name;
     }
-    // -------------------------------------
 
+    // === 3. İSTATİSTİK & GRAFİK ===
     let currentPeriod = 'week';
     let activityData = null;
 
-    // --- VERİ GRUPLANDIRMA ---
+    // Veriyi gruplandırma (Haftalık/Aylık vb.)
     function aggregateData(dailyStats, period) {
         if (!dailyStats || dailyStats.length === 0) return [];
-        if (period === 'day' || period === 'week') {
-            return dailyStats;
-        }
+        if (period === 'day' || period === 'week') return dailyStats;
 
+        // Ay ve Yıl için gruplama mantığı
         const groupedData = {};
-
         dailyStats.forEach(stat => {
             const date = new Date(stat.date);
             let key;
-            let label;
-            let sortDate;
-
             if (period === 'month') {
-                const dayOfMonth = date.getDate();
-                const weekNum = Math.ceil(dayOfMonth / 7); 
+                // Haftalara böl
+                const weekNum = Math.ceil(date.getDate() / 7);
                 key = `week-${weekNum}`;
-                label = `${weekNum}. Hafta`;
-                sortDate = new Date(date.getFullYear(), date.getMonth(), (weekNum - 1) * 7 + 1);
             } else if (period === 'year') {
-                const monthIndex = date.getMonth();
-                key = `month-${monthIndex}`;
-                sortDate = new Date(date.getFullYear(), monthIndex, 1);
-                label = sortDate; 
+                // Aylara böl
+                key = `month-${date.getMonth()}`;
             }
 
             if (!groupedData[key]) {
                 groupedData[key] = {
-                    date: sortDate, 
-                    labelOverride: period === 'month' ? label : null,
-                    requestsCreated: 0,
-                    matchesCreated: 0,
-                    matchesAccepted: 0
+                    date: date, // Sıralama için
+                    requestsCreated: 0, matchesCreated: 0, matchesAccepted: 0
                 };
             }
-
             groupedData[key].requestsCreated += stat.requestsCreated;
             groupedData[key].matchesCreated += stat.matchesCreated;
             groupedData[key].matchesAccepted += stat.matchesAccepted;
         });
-
-        return Object.values(groupedData).sort((a, b) => new Date(a.date) - new Date(b.date));
+        return Object.values(groupedData);
     }
 
-    // Load activity stats
-    async function loadActivityStats(period = 'week') {
+    async function loadActivityStats(period) {
         try {
             const stats = await matchService.getActivityStats(period);
             activityData = stats;
-            updateStatsDisplay(stats);
+            
+            // Sayıları güncelle
+            document.getElementById('totalRequestsCreated').textContent = stats.totalRequestsCreated || 0;
+            document.getElementById('totalMatchesAccepted').textContent = stats.totalMatchesAccepted || 0;
+            document.getElementById('totalMatchesCreated').textContent = stats.totalMatchesCreated || 0;
+
             const processedData = aggregateData(stats.dailyStats, period);
-            drawChart(processedData, period); 
+            drawChart(processedData); 
+
         } catch (error) {
-            console.error('Error loading activity stats:', error);
+            console.error('Stats error:', error);
         }
     }
 
-    function updateStatsDisplay(stats) {
-        document.getElementById('totalRequestsCreated').textContent = stats.totalRequestsCreated || 0;
-        document.getElementById('totalMatchesAccepted').textContent = stats.totalMatchesAccepted || 0;
-        document.getElementById('totalMatchesCreated').textContent = stats.totalMatchesCreated || 0;
-    }
-
-    // Initialize Canvas
+    // Basit Canvas Çizimi
     function initCanvas() {
         const canvas = document.getElementById('activityCanvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = canvas.offsetWidth;
-        canvas.height = 200;
+        
+        // Çözünürlük ayarı
+        canvas.width = canvas.parentElement.offsetWidth;
+        canvas.height = 250;
 
-        window.drawChart = function(dailyStats, period) {
+        window.drawChart = function(data) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (!dailyStats || dailyStats.length === 0) {
-                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary');
-                ctx.font = '14px sans-serif';
+            if (!data || data.length === 0) {
+                ctx.fillStyle = '#aaa';
                 ctx.textAlign = 'center';
-                ctx.fillText('Henüz veri yok', canvas.width / 2, canvas.height / 2);
+                ctx.fillText('Veri Yok', canvas.width/2, canvas.height/2);
                 return;
             }
 
-            const padding = 40;
-            const chartWidth = canvas.width - padding * 2;
-            const chartHeight = canvas.height - padding * 2;
-            
-            ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-color');
-            ctx.lineWidth = 1;
-            const dataPoints = dailyStats.length;
-            const maxValue = Math.max(
-                ...dailyStats.map(d => d.requestsCreated + d.matchesCreated + d.matchesAccepted),
-                1
-            );
-            
-            for (let i = 0; i <= 5; i++) {
-                const y = padding + (chartHeight / 5) * i;
-                ctx.beginPath();
-                ctx.moveTo(padding, y);
-                ctx.lineTo(canvas.width - padding, y);
-                ctx.stroke();
-            }
-            
-            for (let i = 0; i <= dataPoints; i++) {
-                const x = padding + (chartWidth / dataPoints) * i;
-                ctx.beginPath();
-                ctx.moveTo(x, padding);
-                ctx.lineTo(x, canvas.height - padding);
-                ctx.stroke();
-            }
-            
-            const barWidth = chartWidth / dataPoints - 5;
-            const colors = {
-                requests: getComputedStyle(document.documentElement).getPropertyValue('--accent-primary'),
-                matches: getComputedStyle(document.documentElement).getPropertyValue('--accent-secondary'),
-                accepted: getComputedStyle(document.documentElement).getPropertyValue('--accent-secondary')
-            };
+            const padding = 30;
+            const width = canvas.width - padding*2;
+            const height = canvas.height - padding*2;
+            const maxVal = Math.max(...data.map(d => d.requestsCreated + d.matchesAccepted + 5));
+            const stepX = width / data.length;
 
-            dailyStats.forEach((day, index) => {
-                const x = padding + (chartWidth / dataPoints) * index + 2.5;
-                const total = day.requestsCreated + day.matchesCreated + day.matchesAccepted;
-                let currentY = canvas.height - padding;
+            // Çubukları çiz
+            data.forEach((d, i) => {
+                const x = padding + i * stepX + 10;
+                const barW = stepX - 20;
                 
-                if (day.requestsCreated > 0) {
-                    const height = (day.requestsCreated / maxValue) * chartHeight;
-                    ctx.fillStyle = colors.requests;
-                    ctx.fillRect(x, currentY - height, barWidth, height);
-                    currentY -= height;
-                }
+                // Mavi (Talep)
+                const h1 = (d.requestsCreated / maxVal) * height;
+                ctx.fillStyle = '#4facfe';
+                ctx.fillRect(x, height + padding - h1, barW, h1);
                 
-                if (day.matchesCreated > 0) {
-                    const height = (day.matchesCreated / maxValue) * chartHeight;
-                    ctx.fillStyle = colors.matches;
-                    ctx.fillRect(x, currentY - height, barWidth, height);
-                    currentY -= height;
-                }
-                
-                if (day.matchesAccepted > 0) {
-                    const height = (day.matchesAccepted / maxValue) * chartHeight;
-                    ctx.fillStyle = colors.accepted;
-                    ctx.globalAlpha = 0.7;
-                    ctx.fillRect(x, currentY - height, barWidth, height);
-                    ctx.globalAlpha = 1.0;
-                }
+                // Yeşil (Eşleşme)
+                const h2 = (d.matchesAccepted / maxVal) * height;
+                ctx.fillStyle = '#43e97b';
+                // Eşleşme çubuğunu talebin yanına veya üstüne çizebiliriz, burada üstüne bindirelim (basitlik için)
+                ctx.fillRect(x, height + padding - h1 - h2, barW, h2);
             });
-            
-            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary');
-            ctx.font = '11px sans-serif';
-            ctx.textAlign = 'center';
-            dailyStats.forEach((day, index) => {
-                const x = padding + (chartWidth / dataPoints) * index + (chartWidth / dataPoints) / 2;
-                const date = new Date(day.date);
-                let label = '';
-
-                if (day.labelOverride) {
-                    label = day.labelOverride;
-                } else {
-                    if (period === 'day') {
-                        label = date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-                    } else if (period === 'week') {
-                        label = date.toLocaleDateString('tr-TR', { weekday: 'short' });
-                    } else if (period === 'year') {
-                        label = date.toLocaleDateString('tr-TR', { month: 'short' });
-                    }
-                }
-                ctx.fillText(label, x, canvas.height - 10);
-            });
-        };
-        
-        window.addEventListener('resize', () => {
-            canvas.width = canvas.offsetWidth;
-            if (activityData) {
-                const processedData = aggregateData(activityData.dailyStats, currentPeriod);
-                drawChart(processedData, currentPeriod);
-            }
-        });
+        }
     }
-
-    initCanvas();
-
-    document.getElementById('periodSelect').addEventListener('change', (e) => {
-        currentPeriod = e.target.value;
-        loadActivityStats(currentPeriod);
-    });
-
-    loadActivityStats('week');
-
+    
+    // === 4. TALEPLERİ LİSTELEME ===
     async function loadRequests() {
+        const myContainer = document.getElementById('myRequests');
+        const otherContainer = document.getElementById('otherRequests');
+
         try {
-            const [myMealRequests, allMealRequests, myFingerprints, allFingerprints] = await Promise.all([
+            // Paralel istek atalım
+            const [myReqs, allReqs, myFPs, allFPs] = await Promise.all([
                 mealRequestService.getMy(),
                 mealRequestService.getAll(),
                 fingerprintService.getMy(),
                 fingerprintService.getAll()
             ]);
 
-            const user = authService.getCurrentUser();
+            // Verileri Birleştir ve Sırala
             const myRequests = [
-                ...myMealRequests.filter(req => req.status !== 'cancelled').map(req => ({ ...req, type: 'mealRequest' })),
-                ...myFingerprints.filter(fp => fp.status !== 'cancelled').map(fp => ({ ...fp, type: 'fingerprint' }))
-            ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                ...myReqs.filter(r => r.status !== 'cancelled').map(r => ({ ...r, type: 'mealRequest' })),
+                ...myFPs.filter(f => f.status !== 'cancelled').map(f => ({ ...f, type: 'fingerprint' }))
+            ].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-            const otherMealRequests = allMealRequests.filter(req => {
-                if (req.userId === user.id) return false;
-                if (req.status === 'cancelled' || req.status === 'matched') return false;
-                if (user.dorm && req.userDorm) {
-                    return req.userDorm === user.dorm;
-                }
-                return true; 
-            }).map(req => ({ ...req, type: 'mealRequest' }));
+            const otherRequests = [
+                ...allReqs.filter(r => r.userId !== user.id && r.status === 'active').map(r => ({ ...r, type: 'mealRequest' })),
+                ...allFPs.filter(f => f.userId !== user.id && f.status === 'active').map(f => ({ ...f, type: 'fingerprint' }))
+            ].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-            const otherFingerprints = allFingerprints.filter(fp => {
-                if (fp.userId === user.id) return false;
-                if (fp.status === 'cancelled' || fp.status === 'matched') return false;
-                if (user.dorm && fp.userDorm) {
-                    return fp.userDorm === user.dorm;
-                }
-                return true; 
-            }).map(fp => ({ ...fp, type: 'fingerprint' }));
+            renderList(myContainer, myRequests, true);
+            renderList(otherContainer, otherRequests, false);
 
-            const otherRequests = [...otherMealRequests, ...otherFingerprints]
-                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-            renderRequests('myRequests', myRequests, true);
-            renderRequests('otherRequests', otherRequests, false);
         } catch (error) {
-            console.error('Error loading requests:', error);
-            document.getElementById('myRequests').innerHTML =
-                '<p class="text-error">Talepler yüklenemedi</p>';
-            document.getElementById('otherRequests').innerHTML =
-                '<p class="text-error">Talepler yüklenemedi</p>';
+            console.error(error);
+            myContainer.innerHTML = '<p style="color:red">Veriler yüklenemedi.</p>';
         }
     }
 
-    function renderRequests(containerId, requests, isOwn) {
-        const container = document.getElementById(containerId);
-        if (!requests || requests.length === 0) {
-            container.innerHTML = '<p style="color: var(--text-secondary);">Talep bulunamadı</p>';
+    function renderList(container, items, isOwn) {
+        if (!items.length) {
+            container.innerHTML = '<div style="text-align:center; color:var(--text-secondary); padding:1rem;">📭 Henüz talep yok.</div>';
             return;
         }
 
-        container.innerHTML = requests.map(request => {
-            const isFingerprint = request.type === 'fingerprint';
-            const isGive = isFingerprint; 
-            const dateField = isFingerprint ? 'availableDate' : 'preferredDate';
-            const startTimeField = isFingerprint ? 'startTime' : 'preferredStartTime';
-            const endTimeField = isFingerprint ? 'endTime' : 'preferredEndTime';
-            const notesField = isFingerprint ? 'description' : 'notes';
+        container.innerHTML = items.map(item => {
+            const isGive = item.type === 'fingerprint'; // Verme = Fingerprint
+            const label = isGive ? 'Verme İsteği' : 'Alma İsteği';
+            const icon = isGive ? 'ri-hand-heart-line' : 'ri-restaurant-line';
+            const statusColor = item.status === 'active' ? '#43e97b' : '#aaa';
+
+            // Tarih formatla
+            const dateStr = item.preferredDate || item.availableDate 
+                ? new Date(item.preferredDate || item.availableDate).toLocaleDateString('tr-TR') 
+                : 'Tarih Belirtilmemiş';
+
             return `
-                <div class="card request-card"
-                     data-user-id="${request.userId}"
-                     data-user-name="${(request.userName || '').replace(/"/g, '&quot;')}"
-                     data-request-id="${request.id}"
-                     data-request-type="${request.type}">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="request-type ${isGive ? 'give' : 'take'}">
-                            ${isGive ? '🍽️ Verme' : '🍴 Alma'}
-                        </span>
-                        <span class="badge badge-primary">${request.status || 'active'}</span>
-                    </div>
-                    <p><strong>${request.userName || 'Bilinmeyen'}</strong> ${request.userGender ? `(${request.userGender})` : ''}</p>
-                    <p style="color: var(--text-secondary); font-size: 0.9rem;">
-                        Öğün: ${request.mealType === 'lunch' ? 'Öğle Yemeği' : request.mealType === 'dinner' ? 'Akşam Yemeği' : request.mealType}
-                    </p>
-                    ${request[dateField] ? `<p style="color: var(--text-secondary); font-size: 0.9rem;">Tarih: ${new Date(request[dateField]).toLocaleDateString('tr-TR')}</p>` : ''}
-                    ${request[startTimeField] && request[endTimeField] ?
-                        `<p style="color: var(--text-secondary); font-size: 0.9rem;">Saat: ${request[startTimeField]} - ${request[endTimeField]}</p>` : ''}
-                    ${request[notesField] ? `<p style="margin-top: 0.5rem;">${request[notesField]}</p>` : ''}
-                    <p style="color: var(--text-tertiary); font-size: 0.85rem; margin-top: 0.5rem;">
-                        ${new Date(request.createdAt).toLocaleString('tr-TR')}
-                    </p>
-                    ${isOwn ? `<button class="btn btn-danger btn-sm mt-2 delete-request-btn" data-request-id="${request.id}" data-request-type="${request.type}">Sil</button>` : ''}
+            <div class="request-item" 
+                 data-request-id="${item.id}"
+                 data-request-type="${item.type}"
+                 data-user-id="${item.userId}"
+                 data-user-name="${item.userName || ''}">
+                
+                <div class="request-header">
+                    <span class="user-info">
+                        <i class="${icon}"></i> ${item.userName || 'Bilinmeyen'}
+                    </span>
+                    <span class="meal-badge">${dateStr}</span>
                 </div>
-            `;
+                
+                <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom: 0.5rem;">
+                    <strong>${item.mealType === 'lunch' ? 'Öğle Yemeği' : 'Akşam Yemeği'}</strong>
+                    ${item.notes || item.description ? ' - ' + (item.notes || item.description) : ''}
+                </p>
+
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:0.8rem; color:var(--text-placeholder);">
+                        Durum: <span style="color:${statusColor}; font-weight:bold;">${item.status}</span>
+                    </span>
+                    
+                    ${isOwn 
+                        ? `<button class="btn-delete" style="color:#ff6b6b; background:none; border:none; cursor:pointer;" onclick="event.stopPropagation()">Sil <i class="ri-delete-bin-line"></i></button>` 
+                        : `<i class="ri-message-3-line" style="color:var(--brand-primary); font-size:1.2rem;"></i>`
+                    }
+                </div>
+            </div>`;
         }).join('');
     }
 
-    // Modal functions
-    function openCreateModal(type) {
+    // === 5. MODAL İŞLEMLERİ (Aç/Kapa) ===
+    const modal = document.getElementById('createModal');
+
+    function openModal(type) {
         document.getElementById('requestType').value = type;
-        const modalTitle = type === 'give' ? 'Verme' : 'Alma';
-        document.getElementById('modalTitle').textContent = `${modalTitle} Talebi Oluştur`;
-        document.getElementById('createModal').classList.remove('hidden');
+        document.getElementById('modalTitle').textContent = type === 'give' ? 'Yemek Verme Talebi' : 'Yemek Alma Talebi';
+        modal.classList.add('active');
     }
 
-    function closeCreateModal() {
-        document.getElementById('createModal').classList.add('hidden');
+    function closeModal() {
+        modal.classList.remove('active');
         document.getElementById('createRequestForm').reset();
-        document.getElementById('createError').classList.add('hidden');
-        const submitBtn = document.getElementById('submitCreateBtn');
-        submitBtn.disabled = false;
-        submitBtn.querySelector('.btn-text').classList.remove('hidden');
-        submitBtn.querySelector('.btn-loading').classList.add('hidden');
     }
 
-    function openChat(userId, userName, requestId = null, requestType = null) {
-        let url = `/Chat?userId=${userId}&userName=${encodeURIComponent(userName)}`;
-        if (requestId && requestType) {
-            url += `&requestId=${requestId}&requestType=${requestType}`;
-        }
-        window.location.href = url;
-    }
+    document.getElementById('createGiveBtn').addEventListener('click', () => openModal('give'));
+    document.getElementById('createTakeBtn').addEventListener('click', () => openModal('take'));
+    document.getElementById('closeCreateModalBtn').addEventListener('click', closeModal);
+    document.getElementById('cancelCreateModalBtn').addEventListener('click', closeModal);
 
-    async function deleteRequest(id) {
-        if (!confirm('Bu talebi silmek istediğinizden emin misiniz?')) return;
-        try {
-            await mealRequestService.delete(id);
-            loadRequests();
-        } catch (error) {
-            alert('Talep silinemedi: ' + error.message);
-        }
-    }
-
-    async function deleteFingerprint(id) {
-        if (!confirm('Bu parmak izini silmek istediğinizden emin misiniz?')) return;
-        try {
-            await fingerprintService.delete(id);
-            loadRequests();
-        } catch (error) {
-            alert('Parmak izi silinemedi: ' + error.message);
-        }
-    }
-
-    document.getElementById('createGiveBtn').addEventListener('click', () => {
-        openCreateModal('give');
-    });
-
-    document.getElementById('createTakeBtn').addEventListener('click', () => {
-        openCreateModal('take');
-    });
-
-    document.getElementById('closeCreateModalBtn').addEventListener('click', closeCreateModal);
-    document.getElementById('cancelCreateModalBtn').addEventListener('click', closeCreateModal);
-
+    // === 6. TALEP OLUŞTURMA ===
     document.getElementById('createRequestForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+        const btn = document.getElementById('submitCreateBtn');
         const errorDiv = document.getElementById('createError');
-        const submitBtn = document.getElementById('submitCreateBtn');
-        const btnText = submitBtn.querySelector('.btn-text');
-        const btnLoading = submitBtn.querySelector('.btn-loading');
-        errorDiv.classList.add('hidden');
-        submitBtn.disabled = true;
-        btnText.classList.add('hidden');
-        btnLoading.classList.remove('hidden');
+        
+        // UI Durumu
+        btn.querySelector('.btn-text').style.display = 'none';
+        btn.querySelector('.btn-loading').style.display = 'inline';
+        btn.disabled = true;
+        errorDiv.style.display = 'none';
 
-        const requestType = document.getElementById('requestType').value; 
+        const type = document.getElementById('requestType').value;
         const mealType = document.getElementById('mealType').value;
-        const preferredDate = document.getElementById('preferredDate').value || null;
-        const preferredStartTime = document.getElementById('preferredStartTime').value || null;
-        const preferredEndTime = document.getElementById('preferredEndTime').value || null;
-        const notes = document.getElementById('notes').value.trim() || null;
+        const date = document.getElementById('preferredDate').value;
+        const start = document.getElementById('preferredStartTime').value;
+        const end = document.getElementById('preferredEndTime').value;
+        const notes = document.getElementById('notes').value;
 
-        if (!mealType) {
-            errorDiv.textContent = 'Lütfen öğün türü seçiniz';
-            errorDiv.classList.remove('hidden');
-            submitBtn.disabled = false;
-            btnText.classList.remove('hidden');
-            btnLoading.classList.add('hidden');
+        try {
+            const sTime = start ? start + ':00' : null;
+            const eTime = end ? end + ':00' : null;
+
+            if (type === 'give') {
+                await fingerprintService.create(mealType, date, sTime, eTime, notes);
+            } else {
+                await mealRequestService.create(mealType, date, sTime, eTime, notes);
+            }
+            
+            closeModal();
+            loadRequests(); // Listeyi yenile
+            loadActivityStats(currentPeriod); // Grafiği yenile
+
+        } catch (err) {
+            errorDiv.textContent = err.message || 'Hata oluştu';
+            errorDiv.style.display = 'block';
+        } finally {
+            btn.querySelector('.btn-text').style.display = 'inline';
+            btn.querySelector('.btn-loading').style.display = 'none';
+            btn.disabled = false;
+        }
+    });
+
+    // === 7. KARTA TIKLAMA (SOHBETE GİT) ===
+    document.addEventListener('click', async (e) => {
+        // Silme butonu kontrolü
+        if (e.target.closest('.btn-delete')) {
+            const card = e.target.closest('.request-item');
+            const id = card.dataset.requestId;
+            const type = card.dataset.requestType;
+            
+            if (confirm('Silmek istediğine emin misin?')) {
+                try {
+                    if (type === 'fingerprint') await fingerprintService.delete(id);
+                    else await mealRequestService.delete(id);
+                    loadRequests(); // Listeyi yenile
+                } catch(err) { alert('Silinemedi'); }
+            }
             return;
         }
 
-        try {
-            const startTime = preferredStartTime ? `${preferredStartTime}:00` : null;
-            const endTime = preferredEndTime ? `${preferredEndTime}:00` : null;
-            if (requestType === 'give') {
-                await fingerprintService.create(mealType, preferredDate, startTime, endTime, notes);
-            } else {
-                await mealRequestService.create(mealType, preferredDate, startTime, endTime, notes);
-            }
-            closeCreateModal();
-            loadRequests();
-        } catch (error) {
-            errorDiv.textContent = error.message || 'Talep oluşturulamadı';
-            errorDiv.classList.remove('hidden');
-        } finally {
-            submitBtn.disabled = false;
-            btnText.classList.remove('hidden');
-            btnLoading.classList.add('hidden');
-        }
-    });
+        // Karta tıklama kontrolü (Sohbet)
+        const card = e.target.closest('.request-item');
+        if (card) {
+            const userId = card.dataset.userId;
+            const userName = card.dataset.userName;
+            const reqId = card.dataset.requestId;
+            const reqType = card.dataset.requestType;
 
-    document.getElementById('createModal').addEventListener('click', (e) => {
-        if (e.target.id === 'createModal') {
-            closeCreateModal();
-        }
-    });
-
-    document.addEventListener('click', (e) => {
-        const requestCard = e.target.closest('.request-card');
-        if (requestCard && !e.target.closest('.delete-request-btn')) {
-            const userId = requestCard.dataset.userId;
-            const userName = requestCard.dataset.userName;
-            const requestId = requestCard.dataset.requestId;
-            const requestType = requestCard.dataset.requestType;
-            if (userId && userName) {
-                openChat(userId, userName, requestId, requestType);
-            }
-        }
-
-        if (e.target.classList.contains('delete-request-btn')) {
-            e.stopPropagation();
-            const requestId = e.target.dataset.requestId;
-            const requestType = e.target.dataset.requestType;
-            if (requestId) {
-                if (requestType === 'fingerprint') {
-                    deleteFingerprint(requestId);
-                } else {
-                    deleteRequest(requestId);
-                }
+            // Kendi kartımız değilse sohbete git
+            if (userId != user.id) {
+                window.location.href = `/Chat?userId=${userId}&userName=${userName}&requestId=${reqId}&requestType=${reqType}`;
             }
         }
     });
- 
+
+    // === BAŞLATMA ===
+    initCanvas();
+    loadActivityStats('week');
     loadRequests();
+
+    // Dönem değişince
+    document.getElementById('periodSelect').addEventListener('change', (e) => {
+        currentPeriod = e.target.value;
+        loadActivityStats(currentPeriod);
+    });
+
 </script>
 }

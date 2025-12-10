@@ -1,194 +1,522 @@
 @page
 @model IndexModel
 @{
-    ViewData["Title"] = "Giriş - Payona";
+ViewData["Title"] = "Giriş - Payona";
 }
 
-<div style="max-width: 400px; margin: 4rem auto;">
-    <div class="card">
-        <div class="card-header text-center">
-            <h1 class="card-title">Payona'ya Hoş Geldiniz</h1>
-            <p style="color: var(--text-secondary);">Öğrenci Yemek Paylaşım Platformu</p>
+<!-- NOT: Fontlar ve genel stiller _Layout.cshtml'den gelmektedir. -->
+
+<style>
+    /* 
+       Index Sayfası Özel Stilleri
+       Renkler Layout'taki css değişkenlerinden (var(--...)) çekilir.
+    */
+
+    /* Sayfa Kapsayıcısı */
+    .auth-container {
+        position: relative;
+        width: 100%;
+        /* Navbar (70px) yüksekliğini düşüyoruz */
+        min-height: calc(100vh - 70px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* Arka plan görseli */
+        background-image: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+        background-size: cover;
+        background-position: center;
+        /* Layout padding'i sıfırlıyoruz */
+        margin: 0;
+        padding: 1rem;
+    }
+
+    /* Görsel üzerine perde (Overlay) */
+    .auth-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5); /* Resim üzerindeki karartma sabittir */
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 1;
+    }
+
+    /* Giriş Kartı */
+    .auth-card {
+        position: relative;
+        z-index: 2;
+        width: 1000px;
+        min-height: 600px;
+
+        /* TEMA RENGİ: Layout'tan gelen kart arka planı */
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+
+        border-radius: 20px;
+        box-shadow: 0 10px 40px var(--shadow-color);
+        overflow: hidden;
+        display: flex;
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    /* SOL TARAF: Görsel Banner */
+    .auth-visual {
+        flex: 1;
+        /* Renkler: Brand renkleri */
+        background: linear-gradient(135deg, var(--brand-primary), var(--brand-dark));
+        color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 2rem;
+        position: relative;
+        transition: background 0.6s ease-in-out;
+    }
+
+    .auth-visual i, .auth-visual img {
+        margin-bottom: 1.5rem;
+        filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));
+        animation: float 6s ease-in-out infinite;
+        color: rgba(255,255,255,0.95);
+    }
+
+    .visual-content h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: #ffffff;
+    }
+
+    .visual-content p {
+        font-size: 1rem;
+        opacity: 0.95;
+        line-height: 1.6;
+        color: #ffffff;
+    }
+
+    /* SAĞ TARAF: Form Alanı */
+    .auth-forms {
+        flex: 1;
+        position: relative;
+        background: var(--bg-card); /* Temaya duyarlı */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem;
+        transition: background-color 0.3s ease;
+    }
+
+    /* Form Kapsayıcısı (Animasyon için) */
+    .form-wrapper {
+        width: 100%;
+        max-width: 350px;
+        position: absolute;
+        transition: all 0.5s ease-in-out;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateX(20px);
+    }
+
+    .form-wrapper.active {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(0);
+        position: relative;
+    }
+
+    /* Başlıklar */
+    .form-header { text-align: center; margin-bottom: 2rem; }
+
+    .form-header h2 {
+        color: var(--text-main);
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-header p {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    /* Input Alanları */
+    .input-group { position: relative; margin-bottom: 1.5rem; }
+
+    .input-group i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-placeholder);
+        transition: all 0.3s;
+        z-index: 5;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px 12px 45px;
+        border: 2px solid var(--border-color);
+        border-radius: 10px;
+        outline: none;
+        font-size: 0.95rem;
+        background: var(--bg-input); /* Tema Dark ise koyu olur */
+        color: var(--text-main);
+        transition: all 0.3s;
+    }
+
+    .form-control:focus {
+        border-color: var(--brand-primary);
+        background: var(--bg-card);
+    }
+
+    .form-control:focus + i {
+        color: var(--brand-primary);
+    }
+
+    /* Butonlar */
+    .btn-submit {
+        width: 100%;
+        padding: 12px;
+        background: var(--brand-primary);
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 5px 15px var(--shadow-color);
+    }
+
+    .btn-submit:hover {
+        background: var(--brand-dark);
+        transform: translateY(-2px);
+    }
+
+    .btn-submit:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    /* Alt Linkler */
+    .switch-text {
+        text-align: center;
+        margin-top: 1.5rem;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .switch-link {
+        color: var(--brand-primary);
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: color 0.3s;
+    }
+
+    .switch-link:hover {
+        color: var(--brand-dark);
+        text-decoration: underline;
+    }
+
+    /* Hata Mesajı Kutusu */
+    .text-error {
+        color: var(--brand-dark);
+        font-size: 0.85rem;
+        background: rgba(238, 82, 83, 0.1);
+        padding: 10px;
+        border-radius: 8px;
+        border-left: 3px solid var(--brand-dark);
+        margin-bottom: 1rem;
+        display: none;
+    }
+
+    .text-error:not(:empty) {
+        display: block;
+        animation: shake 0.5s ease-in-out;
+    }
+
+    /* Animasyonlar (Razor için @@ kullanıldı) */
+    @@keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @@keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-15px); }
+        100% { transform: translateY(0px); }
+    }
+    @@keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+
+    /* Mobil Uyumluluk */
+    @@media (max-width: 768px) {
+        .auth-card {
+            width: 100%;
+            height: auto;
+            flex-direction: column;
+            min-height: auto;
+        }
+        .auth-visual {
+            padding: 2rem 1rem;
+            flex: 0; /* İçeriğe göre yükseklik */
+        }
+        .visual-content h2 { font-size: 1.8rem; }
+        .auth-visual i { font-size: 3em; }
+        .auth-forms { padding: 2rem 1rem; flex: 1; }
+    }
+</style>
+
+<div class="auth-container">
+    <div class="auth-card">
+        <!-- SOL TARA: Banner & Görsel -->
+        <div class="auth-visual">
+            <div class="visual-content">
+                <i class="fas fa-utensils fa-4x"></i>
+                <h2>Payona</h2>
+                <p>Öğrenci mutfağında paylaşmanın ve lezzetin buluşma noktası.</p>
+            </div>
+            <!-- Dekoratif Arkaplan Halkaları -->
+            <div style="position: absolute; bottom: -50px; left: -50px; width: 150px; height: 150px; border-radius: 50%; background: rgba(255,255,255,0.1);"></div>
+            <div style="position: absolute; top: -30px; right: -30px; width: 100px; height: 100px; border-radius: 50%; background: rgba(255,255,255,0.1);"></div>
         </div>
 
-        <div id="loginForm">
-            <h2 style="margin-bottom: 1.5rem;">Giriş Yap</h2>
-            <form id="loginFormElement">
-                <div class="form-group">
-                    <label class="form-label" for="loginEmail">E-posta</label>
-                    <input type="email" id="loginEmail" class="form-input" required />
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="loginPassword">Şifre</label>
-                    <input type="password" id="loginPassword" class="form-input" required />
-                </div>
-                <div id="loginError" class="text-error hidden mb-2"></div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Giriş Yap</button>
-            </form>
-            <p class="text-center mt-2">
-                Hesabınız yok mu? 
-                <a href="#" id="showRegisterLink" style="color: var(--accent-primary); cursor: pointer;">Kayıt Ol</a>
-            </p>
-        </div>
+        <!-- SAĞ TARAF: Form Alanları -->
+        <div class="auth-forms">
 
-        <div id="registerForm" class="hidden">
-            <h2 style="margin-bottom: 1.5rem;">Kayıt Ol</h2>
-            <form id="registerFormElement">
-                <div class="form-group">
-                    <label class="form-label" for="registerName">Ad</label>
-                    <input type="text" id="registerName" class="form-input" required />
+            <!-- 1. GİRİŞ FORMU -->
+            <div id="loginFormContainer" class="form-wrapper active">
+                <div class="form-header">
+                    <h2>Hoş Geldin!</h2>
+                    <p>Hesabına giriş yap ve keşfetmeye başla.</p>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="registerSurname">Soyad</label>
-                    <input type="text" id="registerSurname" class="form-input" required />
+
+                <form id="loginFormElement">
+                    <div class="input-group">
+                        <input type="email" id="loginEmail" class="form-control" placeholder="E-posta Adresi" required />
+                        <i class="fas fa-envelope"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="password" id="loginPassword" class="form-control" placeholder="Şifre" required />
+                        <i class="fas fa-lock"></i>
+                    </div>
+
+                    <div id="loginError" class="text-error"></div>
+
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-sign-in-alt" style="margin-right: 8px;"></i>Giriş Yap
+                    </button>
+                </form>
+
+                <p class="switch-text">
+                    Hesabın yok mu?
+                    <a id="showRegisterLink" class="switch-link">Kayıt Ol</a>
+                </p>
+            </div>
+
+            <!-- 2. KAYIT FORMU -->
+            <div id="registerFormContainer" class="form-wrapper">
+                <div class="form-header">
+                    <h2>Aramıza Katıl</h2>
+                    <p>Payona ailesinin bir parçası ol.</p>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="registerEmail">E-posta</label>
-                    <input type="email" id="registerEmail" class="form-input" required />
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="registerPassword">Şifre</label>
-                    <input type="password" id="registerPassword" class="form-input" required minlength="6" placeholder="En az 6 karakter" />
-                    <small style="color: var(--text-secondary); font-size: 0.875rem; display: block; margin-top: 0.25rem;">
-                        Şifre en az 6 karakter olmalıdır
-                    </small>
-                </div>
-                <div id="registerError" class="text-error hidden mb-2"></div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Kayıt Ol</button>
-            </form>
-            <p class="text-center mt-2">
-                Zaten hesabınız var mı? 
-                <a href="#" id="showLoginLink" style="color: var(--accent-primary); cursor: pointer;">Giriş Yap</a>
-            </p>
+
+                <form id="registerFormElement">
+                    <div style="display: flex; gap: 10px;">
+                        <div class="input-group">
+                            <input type="text" id="registerName" class="form-control" placeholder="Ad" required />
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" id="registerSurname" class="form-control" placeholder="Soyad" required />
+                            <i class="fas fa-user-tag"></i>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="email" id="registerEmail" class="form-control" placeholder="E-posta Adresi" required />
+                        <i class="fas fa-envelope"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="password" id="registerPassword" class="form-control" placeholder="Şifre (Min 6)" required minlength="6" />
+                        <i class="fas fa-lock"></i>
+                    </div>
+
+                    <div id="registerError" class="text-error"></div>
+
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-user-plus" style="margin-right: 8px;"></i>Kayıt Ol
+                    </button>
+                </form>
+
+                <p class="switch-text">
+                    Zaten hesabın var mı?
+                    <a id="showLoginLink" class="switch-link">Giriş Yap</a>
+                </p>
+            </div>
+
         </div>
     </div>
 </div>
 
 @section Scripts {
-    <script type="module">
-        import { authService } from '/js/modules/auth.js';
-        import { apiClient } from '/js/modules/api.js';
+<script type="module">
+    import { authService } from '/js/modules/auth.js';
+    import { apiClient } from '/js/modules/api.js';
 
-        // Check if already authenticated
-        if (authService.isAuthenticated()) {
-            const user = authService.getCurrentUser();
+    // 1. Oturum Kontrolü: Zaten giriş yapılmışsa yönlendir
+    if (authService.isAuthenticated()) {
+        if (authService.requiresDormInfo()) {
+            window.location.href = '/DormInfo';
+        } else {
+            window.location.href = '/Dashboard';
+        }
+    }
+
+    // 2. Element Seçimleri
+    const loginContainer = document.getElementById('loginFormContainer');
+    const registerContainer = document.getElementById('registerFormContainer');
+    const visualSide = document.querySelector('.auth-visual');
+
+    // 3. Geçiş Fonksiyonları (Login <-> Register)
+    function showRegister() {
+        loginContainer.classList.remove('active');
+
+        // Kayıt ekranına geçerken sol tarafın rengini mavi/yeşil tonlara çekelim
+        visualSide.style.background = 'linear-gradient(135deg, #4ECDC4, #2193b0)';
+
+        setTimeout(() => {
+            registerContainer.classList.add('active');
+        }, 300);
+    }
+
+    function showLogin() {
+        registerContainer.classList.remove('active');
+
+        // Giriş ekranına dönerken orijinal mercan rengine dönelim
+        visualSide.style.background = 'linear-gradient(135deg, #FF6B6B, #EE5253)';
+
+        setTimeout(() => {
+            loginContainer.classList.add('active');
+        }, 300);
+    }
+
+    // Linklere Olay Ekleme
+    document.getElementById('showRegisterLink')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        showRegister();
+    });
+
+    document.getElementById('showLoginLink')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        showLogin();
+    });
+
+    // 4. Giriş (Login) İşlemi
+    document.getElementById('loginFormElement').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const errorDiv = document.getElementById('loginError');
+        errorDiv.style.display = 'none';
+        errorDiv.textContent = '';
+
+        // Butonu Yükleniyor Moduna Al
+        const btn = e.target.querySelector('button');
+        const originalBtnText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Giriş Yapılıyor...';
+        btn.disabled = true;
+
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+
+        try {
+            const response = await authService.login(email, password);
+            // Başarılı giriş sonrası yönlendirme
             if (authService.requiresDormInfo()) {
                 window.location.href = '/DormInfo';
             } else {
                 window.location.href = '/Dashboard';
             }
+        } catch (error) {
+            // Hata Gösterimi
+            errorDiv.textContent = error.message || 'Giriş başarısız. Bilgilerinizi kontrol ediniz.';
+            errorDiv.style.display = 'block';
+            // Butonu eski haline getir
+            btn.innerHTML = originalBtnText;
+            btn.disabled = false;
+        }
+    });
+
+    // 5. Kayıt (Register) İşlemi
+    document.getElementById('registerFormElement').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const errorDiv = document.getElementById('registerError');
+        errorDiv.style.display = 'none';
+        errorDiv.textContent = '';
+
+        // Butonu Yükleniyor Moduna Al
+        const btn = e.target.querySelector('button');
+        const originalBtnText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kayıt Olunuyor...';
+        btn.disabled = true;
+
+        const name = document.getElementById('registerName').value.trim();
+        const surname = document.getElementById('registerSurname').value.trim();
+        const email = document.getElementById('registerEmail').value.trim();
+        const password = document.getElementById('registerPassword').value;
+
+        // Basit Validasyon
+        if (!name || !surname || !email || !password) {
+            errorDiv.textContent = 'Lütfen tüm alanları doldurun';
+            errorDiv.style.display = 'block';
+            btn.innerHTML = originalBtnText;
+            btn.disabled = false;
+            return;
+        }
+        if (password.length < 6) {
+            errorDiv.textContent = 'Şifre en az 6 karakter olmalıdır';
+            errorDiv.style.display = 'block';
+            btn.innerHTML = originalBtnText;
+            btn.disabled = false;
+            return;
         }
 
-        // Show/Hide form handlers
-        function showRegister() {
-            document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('registerForm').classList.remove('hidden');
+        try {
+            const response = await authService.register(email, password, name, surname);
+            // Auth servisi token'ı kaydettiyse yönlendir
+            if (response.token || response.Token) {
+                window.location.href = '/DormInfo';
+            } else {
+                throw new Error('Kayıt başarılı ancak oturum açılamadı');
+            }
+        } catch (error) {
+            let errorMessage = error.message || 'Kayıt işlemi başarısız oldu';
+
+            // Backend'den gelen teknik hataları kullanıcı dostu hale getir
+            if (errorMessage.includes('email') || errorMessage.includes('format')) {
+                errorMessage = 'Geçerli bir e-posta adresi giriniz';
+            } else if (errorMessage.includes('exists') || errorMessage.includes('kullanım') || errorMessage.includes('duplicate')) {
+                errorMessage = 'Bu e-posta adresi zaten kullanılıyor';
+            }
+
+            errorDiv.textContent = errorMessage;
+            errorDiv.style.display = 'block';
+            btn.innerHTML = originalBtnText;
+            btn.disabled = false;
         }
-
-        function showLogin() {
-            document.getElementById('registerForm').classList.add('hidden');
-            document.getElementById('loginForm').classList.remove('hidden');
-        }
-
-        // Add event listeners for show/hide links
-        document.getElementById('showRegisterLink')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            showRegister();
-        });
-
-        document.getElementById('showLoginLink')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            showLogin();
-        });
-
-        // Login handler
-        document.getElementById('loginFormElement').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const errorDiv = document.getElementById('loginError');
-            errorDiv.classList.add('hidden');
-            errorDiv.textContent = '';
-
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-
-            try {
-                const response = await authService.login(email, password);
-                const user = response.user;
-
-                if (authService.requiresDormInfo()) {
-                    window.location.href = '/DormInfo';
-                } else {
-                    window.location.href = '/Dashboard';
-                }
-            } catch (error) {
-                errorDiv.textContent = error.message || 'Giriş başarısız';
-                errorDiv.classList.remove('hidden');
-            }
-        });
-
-        // Register handler
-        document.getElementById('registerFormElement').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const errorDiv = document.getElementById('registerError');
-            errorDiv.classList.add('hidden');
-            errorDiv.textContent = '';
-
-            const name = document.getElementById('registerName').value.trim();
-            const surname = document.getElementById('registerSurname').value.trim();
-            const email = document.getElementById('registerEmail').value.trim();
-            const password = document.getElementById('registerPassword').value;
-
-            // Client-side validation
-            if (!name || !surname || !email || !password) {
-                errorDiv.textContent = 'Lütfen tüm alanları doldurun';
-                errorDiv.classList.remove('hidden');
-                return;
-            }
-
-            if (password.length < 6) {
-                errorDiv.textContent = 'Şifre en az 6 karakter olmalıdır';
-                errorDiv.classList.remove('hidden');
-                return;
-            }
-
-            // Email validation is handled by HTML5 pattern attribute and backend
-            // No need for client-side regex to avoid Razor syntax conflicts
-
-            try {
-                const response = await authService.register(email, password, name, surname);
-                // authService.register already saves token and user
-                // Check if registration was successful
-                if (response.token || response.Token) {
-                    // Redirect to dorm info page
-                    window.location.href = '/DormInfo';
-                } else {
-                    throw new Error('Kayıt başarılı ancak token alınamadı');
-                }
-            } catch (error) {
-                // Show user-friendly error messages
-                let errorMessage = error.message || 'Kayıt işlemi başarısız oldu';
-                
-                // Log the actual error for debugging
-                console.error('Registration error:', error);
-                
-                // Translate common error messages
-                if (errorMessage.includes('did not match the expected pattern') || 
-                    errorMessage.includes('EmailAddress') ||
-                    (errorMessage.includes('email') && errorMessage.includes('format'))) {
-                    // Email format validation error - show backend message
-                    errorMessage = 'Geçerli bir e-posta adresi giriniz';
-                } else if (errorMessage.includes('already in use') || errorMessage.includes('zaten kullanımda')) {
-                    errorMessage = 'Bu e-posta adresi zaten kullanılıyor';
-                } else if (errorMessage.includes('required') || errorMessage.includes('gerekli')) {
-                    errorMessage = 'Lütfen tüm alanları doldurun';
-                } else if (errorMessage.includes('length') || errorMessage.includes('karakter')) {
-                    errorMessage = 'Şifre en az 6 karakter olmalıdır';
-                }
-                
-                errorDiv.textContent = errorMessage;
-                errorDiv.classList.remove('hidden');
-            }
-        });
-    </script>
+    });
+    const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('mode') === 'register') {
+    // Kayıt olma ekranını açan fonksiyonu tetikle
+    showRegister(); 
 }
-
+</script>
+}
