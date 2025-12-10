@@ -9,6 +9,10 @@ class MatchService {
     return apiClient.post(`/matches?fingerprintId=${fingerprintId}&mealRequestId=${mealRequestId}`);
   }
 
+  async createAutoMatch(otherUserId, mealType = 'lunch') {
+    return apiClient.post(`/matches/auto-match?otherUserId=${otherUserId}&mealType=${mealType}`);
+  }
+
   async getMyMatches() {
     return apiClient.get('/matches/my');
   }

@@ -100,35 +100,51 @@
     }
 
     .message-bubble {
-        padding: 12px 16px;
-        border-radius: 18px;
+        padding: 14px 18px;
+        border-radius: 20px;
         font-size: 0.95rem;
-        line-height: 1.4;
+        line-height: 1.5;
         position: relative;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        word-wrap: break-word;
+        max-width: 100%;
     }
 
     .message-sent .message-bubble {
-        background: linear-gradient(135deg, var(--brand-primary), var(--brand-dark));
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         color: white;
         border-bottom-right-radius: 4px;
+        box-shadow: 0 2px 8px rgba(79, 172, 254, 0.3);
     }
 
     .message-received .message-bubble {
-        background: var(--bg-input);
+        background: linear-gradient(135deg, #f0f4f8 0%, #e8edf2 100%);
         color: var(--text-main);
         border: 1px solid var(--border-color);
         border-bottom-left-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Dark theme için */
+    body.dark-theme .message-received .message-bubble {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        border-color: #3a4a5c;
     }
 
     .message-time {
         font-size: 0.7rem;
-        margin-top: 4px;
-        opacity: 0.7;
+        margin-top: 6px;
+        opacity: 0.65;
+        padding: 0 4px;
     }
 
-    .message-sent .message-time { color: var(--text-secondary); text-align: right; }
-    .message-received .message-time { color: var(--text-secondary); }
+    .message-sent .message-time { 
+        color: rgba(255, 255, 255, 0.8); 
+        text-align: right; 
+    }
+    .message-received .message-time { 
+        color: var(--text-secondary); 
+        text-align: left;
+    }
 
     /* Input Area */
     .chat-input-area {
@@ -198,6 +214,8 @@
     }
 
     @@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @@keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
 
 </style>
 
@@ -215,9 +233,19 @@
                 </div>
             </div>
             
-            <button class="btn-match" id="sendMatchRequestBtn">
-                <i class="fas fa-handshake"></i> Eşleş
-            </button>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div id="matchStatusBadge" style="display:none; padding:6px 12px; background:var(--brand-secondary); color:white; border-radius:15px; font-size:0.85rem; font-weight:600;">
+                    <i class="fas fa-check-circle"></i> Eşleşti
+                </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div id="matchStatusBadge" style="display:none; padding:6px 12px; background:var(--brand-secondary); color:white; border-radius:15px; font-size:0.85rem; font-weight:600;">
+                    <i class="fas fa-check-circle"></i> Eşleşti
+                </div>
+                <button class="btn-match" id="sendMatchRequestBtn">
+                    <i class="fas fa-handshake"></i> Eşleş
+                </button>
+            </div>
+        </div>
         </div>
 
         <!-- MESSAGES -->
@@ -364,7 +392,7 @@
         }
 
         async function sendMatchRequest() {
-            if (!confirm('Eşleşme teklifi göndermek istiyor musun?')) return;
+            if (!confirm('Eşleşme teklifi göndermek istiyor musun? Eksik talepler otomatik oluşturulacak.')) return;
             const btn = document.getElementById('sendMatchRequestBtn');
             const originalContent = btn.innerHTML;
             
@@ -372,83 +400,49 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Bekleyin...';
 
             try {
-                let fId = null, mId = null;
-
-                // URL'den geldiyse
+                // Öğün tipini belirle (varsa requestId'den, yoksa varsayılan)
+                let mealType = 'lunch';
                 if (requestId && requestType) {
                     if (requestType === 'fingerprint') {
-                        // Benim fingerprint'im, karşı tarafın meal request'ini bul
-                        fId = requestId;
-                        const others = await mealRequestService.getAll();
-                        const match = others.find(m => m.userId === otherUserId && m.status === 'active');
-                        if (match) {
-                            mId = match.id;
-                        } else {
-                            throw new Error('Karşı tarafta aktif yemek alma talebi bulunamadı.');
-                        }
-                    } else if (requestType === 'mealRequest') {
-                        // Benim meal request'im, karşı tarafın fingerprint'ini bul
-                        mId = requestId;
-                        const others = await fingerprintService.getAll();
-                        const match = others.find(f => f.userId === otherUserId && f.status === 'active');
-                        if (match) {
-                            fId = match.id;
-                        } else {
-                            throw new Error('Karşı tarafta aktif yemek verme talebi bulunamadı.');
-                        }
-                    }
-                } else {
-                    // URL yoksa otomatik bulmaya çalış
-                    // Benim aktif taleplerim
-                    const myActiveFPs = myFingerprints.filter(f => f.status === 'active');
-                    const myActiveMRs = myMealRequests.filter(m => m.status === 'active');
-                    
-                    // Karşı tarafın aktif talepleri
-                    const [othersFPs, othersMRs] = await Promise.all([
-                        fingerprintService.getAll(),
-                        mealRequestService.getAll()
-                    ]);
-                    
-                    const otherFPs = othersFPs.filter(f => f.userId === otherUserId && f.status === 'active');
-                    const otherMRs = othersMRs.filter(m => m.userId === otherUserId && m.status === 'active');
-                    
-                    // Eşleşme bul: Benim fingerprint'im + karşı tarafın meal request'i
-                    if (myActiveFPs.length > 0 && otherMRs.length > 0) {
-                        fId = myActiveFPs[0].id;
-                        mId = otherMRs[0].id;
-                    }
-                    // Veya benim meal request'im + karşı tarafın fingerprint'i
-                    else if (myActiveMRs.length > 0 && otherFPs.length > 0) {
-                        mId = myActiveMRs[0].id;
-                        fId = otherFPs[0].id;
+                        const myFp = myFingerprints.find(f => f.id === requestId);
+                        if (myFp) mealType = myFp.mealType;
                     } else {
-                        throw new Error('Eşleşme için uygun aktif talepler bulunamadı.');
+                        const myMr = myMealRequests.find(m => m.id === requestId);
+                        if (myMr) mealType = myMr.mealType;
                     }
                 }
 
-                if (!fId || !mId) {
-                    throw new Error('Eşleşme için gerekli bilgiler eksik.');
-                }
-
-                // Match oluştur
-                const result = await matchService.createMatch(fId, mId);
+                // Otomatik eşleşme - backend eksik talepleri otomatik oluşturacak
+                const result = await matchService.createAutoMatch(otherUserId, mealType);
+                
                 if (result) {
-                    alert('Eşleşme başarıyla oluşturuldu!');
                     // Butonu güncelle
                     btn.innerHTML = '<i class="fas fa-check"></i> Eşleşme Oluşturuldu';
                     btn.style.background = 'var(--brand-secondary)';
                     btn.disabled = true;
+                    
+                    // Başarı mesajı göster
+                    const successMsg = document.createElement('div');
+                    successMsg.style.cssText = 'position:fixed; top:20px; right:20px; background:#43e97b; color:white; padding:1rem 1.5rem; border-radius:10px; box-shadow:0 4px 15px rgba(0,0,0,0.2); z-index:3000; animation:slideIn 0.3s ease-out;';
+                    successMsg.innerHTML = '<i class="fas fa-check-circle"></i> Eşleşme başarıyla oluşturuldu!';
+                    document.body.appendChild(successMsg);
+                    
+                    setTimeout(() => {
+                        successMsg.style.animation = 'slideOut 0.3s ease-out';
+                        setTimeout(() => successMsg.remove(), 300);
+                    }, 3000);
+                    
+                    // Talepleri yeniden yükle ve eşleşme durumunu kontrol et
+                    await loadUserRequests();
+                    await checkMatchStatus();
                 } else {
                     throw new Error('Eşleşme oluşturulamadı.');
                 }
 
             } catch (error) {
                 alert('Hata: ' + error.message);
-            } finally {
-                if (btn.innerHTML.includes('Bekleyin')) {
-                    btn.disabled = false;
-                    btn.innerHTML = originalContent;
-                }
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
             }
         }
 
@@ -459,9 +453,34 @@
         });
         document.getElementById('sendMatchRequestBtn').addEventListener('click', sendMatchRequest);
 
+        // 7. EŞLEŞME DURUMUNU KONTROL ET
+        async function checkMatchStatus() {
+            try {
+                const matches = await matchService.getMyMatches();
+                const match = matches.find(m => 
+                    (m.giverId === currentUser.id && m.receiverId === otherUserId) ||
+                    (m.receiverId === currentUser.id && m.giverId === otherUserId)
+                );
+                
+                const badge = document.getElementById('matchStatusBadge');
+                const btn = document.getElementById('sendMatchRequestBtn');
+                
+                if (match) {
+                    badge.style.display = 'block';
+                    btn.style.display = 'none';
+                } else {
+                    badge.style.display = 'none';
+                    btn.style.display = 'flex';
+                }
+            } catch (error) {
+                console.error('Error checking match status:', error);
+            }
+        }
+
         // BAŞLATMA
         loadUserRequests();
         loadMessages();
+        checkMatchStatus();
         
         // Polling (Canlı Sohbet)
         stopPolling = chatService.startPolling(otherUserId, (msgs) => renderMessages(msgs), 2000);

@@ -76,4 +76,28 @@ public class MatchesController : ControllerBase
         var result = await _matchService.GetActivityStatsAsync(userId, period);
         return Ok(result);
     }
+
+    [HttpPost("auto-match")]
+    public async Task<IActionResult> CreateAutoMatch([FromQuery] Guid otherUserId, [FromQuery] string? mealType = null)
+    {
+        if (otherUserId == Guid.Empty)
+        {
+            return BadRequest(new { message = "Geçersiz kullanıcı ID'si" });
+        }
+
+        try
+        {
+            var userId = GetUserId();
+            var result = await _matchService.CreateAutoMatchAsync(userId, otherUserId, mealType ?? "lunch");
+            
+            if (result == null)
+                return BadRequest(new { message = "Eşleşme oluşturulamadı." });
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = "Eşleşme oluşturulamadı: " + ex.Message });
+        }
+    }
 }

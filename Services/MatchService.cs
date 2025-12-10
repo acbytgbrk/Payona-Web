@@ -116,6 +116,135 @@ public class MatchService
         return true;
     }
 
+    /// <summary>
+    /// İki kullanıcı arasında otomatik eşleşme oluşturur. Eksik talepleri otomatik oluşturur.
+    /// </summary>
+    public async Task<MatchDto?> CreateAutoMatchAsync(Guid currentUserId, Guid otherUserId, string mealType = "lunch")
+    {
+        // Mevcut aktif talepleri kontrol et
+        var myFingerprints = await _context.Fingerprints
+            .Where(f => f.UserId == currentUserId && f.Status == "active")
+            .ToListAsync();
+        
+        var myMealRequests = await _context.MealRequests
+            .Where(m => m.UserId == currentUserId && m.Status == "active")
+            .ToListAsync();
+        
+        var otherFingerprints = await _context.Fingerprints
+            .Where(f => f.UserId == otherUserId && f.Status == "active")
+            .ToListAsync();
+        
+        var otherMealRequests = await _context.MealRequests
+            .Where(m => m.UserId == otherUserId && m.Status == "active")
+            .ToListAsync();
+
+        Guid fingerprintId;
+        Guid mealRequestId;
+
+        // Senaryo 1: Benim fingerprint'im var, karşı tarafın meal request'i var
+        if (myFingerprints.Any() && otherMealRequests.Any())
+        {
+            var matchingFp = myFingerprints.FirstOrDefault(f => string.IsNullOrWhiteSpace(mealType) || f.MealType == mealType) ?? myFingerprints.First();
+            var matchingMr = otherMealRequests.FirstOrDefault(m => string.IsNullOrWhiteSpace(mealType) || m.MealType == mealType) ?? otherMealRequests.First();
+            fingerprintId = matchingFp.Id;
+            mealRequestId = matchingMr.Id;
+        }
+        // Senaryo 2: Benim meal request'im var, karşı tarafın fingerprint'i var
+        else if (myMealRequests.Any() && otherFingerprints.Any())
+        {
+            var matchingMr = myMealRequests.FirstOrDefault(m => string.IsNullOrWhiteSpace(mealType) || m.MealType == mealType) ?? myMealRequests.First();
+            var matchingFp = otherFingerprints.FirstOrDefault(f => string.IsNullOrWhiteSpace(mealType) || f.MealType == mealType) ?? otherFingerprints.First();
+            mealRequestId = matchingMr.Id;
+            fingerprintId = matchingFp.Id;
+        }
+        // Senaryo 3: Benim fingerprint'im var, karşı tarafın meal request'i yok - otomatik oluştur
+        else if (myFingerprints.Any() && !otherMealRequests.Any())
+        {
+            var myFingerprint = myFingerprints.FirstOrDefault(f => string.IsNullOrWhiteSpace(mealType) || f.MealType == mealType) ?? myFingerprints.First();
+            fingerprintId = myFingerprint.Id;
+            
+            // Karşı taraf için meal request oluştur
+            var newMealRequest = new MealRequest
+            {
+                UserId = otherUserId,
+                MealType = myFingerprint.MealType,
+                PreferredDate = myFingerprint.AvailableDate,
+                PreferredStartTime = myFingerprint.StartTime,
+                PreferredEndTime = myFingerprint.EndTime,
+                Notes = "Otomatik oluşturuldu",
+                Status = "active"
+            };
+            
+            _context.MealRequests.Add(newMealRequest);
+            await _context.SaveChangesAsync();
+            mealRequestId = newMealRequest.Id;
+        }
+        // Senaryo 4: Benim meal request'im var, karşı tarafın fingerprint'i yok - otomatik oluştur
+        else if (myMealRequests.Any() && !otherFingerprints.Any())
+        {
+            var myMealRequest = myMealRequests.FirstOrDefault(m => string.IsNullOrWhiteSpace(mealType) || m.MealType == mealType) ?? myMealRequests.First();
+            mealRequestId = myMealRequest.Id;
+            
+            // Karşı taraf için fingerprint oluştur
+            var newFingerprint = new Fingerprint
+            {
+                UserId = otherUserId,
+                MealType = myMealRequest.MealType,
+                AvailableDate = myMealRequest.PreferredDate,
+                StartTime = myMealRequest.PreferredStartTime,
+                EndTime = myMealRequest.PreferredEndTime,
+                Description = "Otomatik oluşturuldu",
+                Status = "active"
+            };
+            
+            _context.Fingerprints.Add(newFingerprint);
+            await _context.SaveChangesAsync();
+            fingerprintId = newFingerprint.Id;
+        }
+        // Senaryo 5: Hiçbiri yok - her iki taraf için de otomatik oluştur
+        else
+        {
+            // Varsayılan değerler
+            var defaultDate = DateTime.UtcNow.Date.AddDays(1);
+            var defaultStartTime = new TimeSpan(12, 0, 0); // 12:00
+            var defaultEndTime = new TimeSpan(14, 0, 0); // 14:00
+            
+            // Benim için fingerprint oluştur
+            var myFingerprint = new Fingerprint
+            {
+                UserId = currentUserId,
+                MealType = mealType,
+                AvailableDate = defaultDate,
+                StartTime = defaultStartTime,
+                EndTime = defaultEndTime,
+                Description = "Otomatik oluşturuldu",
+                Status = "active"
+            };
+            
+            // Karşı taraf için meal request oluştur
+            var otherMealRequest = new MealRequest
+            {
+                UserId = otherUserId,
+                MealType = mealType,
+                PreferredDate = defaultDate,
+                PreferredStartTime = defaultStartTime,
+                PreferredEndTime = defaultEndTime,
+                Notes = "Otomatik oluşturuldu",
+                Status = "active"
+            };
+            
+            _context.Fingerprints.Add(myFingerprint);
+            _context.MealRequests.Add(otherMealRequest);
+            await _context.SaveChangesAsync();
+            
+            fingerprintId = myFingerprint.Id;
+            mealRequestId = otherMealRequest.Id;
+        }
+
+        // Eşleşme oluştur
+        return await CreateMatchAsync(fingerprintId, mealRequestId, currentUserId);
+    }
+
     public async Task<ActivityStatsDto> GetActivityStatsAsync(Guid userId, string period = "week")
     {
         var now = DateTime.UtcNow;
