@@ -1,33 +1,10 @@
 /**
- * Authentication Module - FIXED VERSION
+ * Authentication Module - Handles login, register, and auth state
  */
 
 import { apiClient } from './api.js';
 
 class AuthService {
-
-  normalizeUser(raw) {
-    if (!raw) return null;
-
-    return {
-      id: raw.id ?? raw.Id,
-      email: raw.email ?? raw.Email,
-      name: raw.name ?? raw.Name,
-      surname: raw.surname ?? raw.Surname,
-      gender: raw.gender ?? raw.Gender,
-      city: raw.city ?? raw.City,
-      dorm: raw.dorm ?? raw.Dorm
-    };
-  }
-
-  saveUser(rawUser) {
-    const user = this.normalizeUser(rawUser);
-    if (user) {
-      sessionStorage.setItem('user', JSON.stringify(user));
-    }
-    return user;
-  }
-
   async register(email, password, name, surname) {
     const response = await apiClient.post('/auth/register', {
       email,
@@ -35,13 +12,17 @@ class AuthService {
       name,
       surname,
     });
-
-    const token = response.token ?? response.Token;
-    const rawUser = response.user ?? response.User;
-
-    if (token) apiClient.setToken(token);
-    if (rawUser) this.saveUser(rawUser);
-
+    
+    // Backend returns token and user, save them
+    if (response.token || response.Token) {
+      const token = response.token || response.Token;
+      const user = response.user || response.User;
+      apiClient.setToken(token);
+      if (user) {
+        sessionStorage.setItem('user', JSON.stringify(user));
+      }
+    }
+    
     return response;
   }
 
@@ -50,13 +31,13 @@ class AuthService {
       email,
       password,
     });
-
-    const token = response.token ?? response.Token;
-    const rawUser = response.user ?? response.User;
-
-    if (token) apiClient.setToken(token);
-    if (rawUser) this.saveUser(rawUser);
-
+    
+    if (response.token) {
+      apiClient.setToken(response.token);
+      // Store user info
+      sessionStorage.setItem('user', JSON.stringify(response.user));
+    }
+    
     return response;
   }
 
@@ -66,9 +47,6 @@ class AuthService {
       city,
       dorm,
     });
-
-    if (response.user) this.saveUser(response.user);
-
     return response;
   }
 
@@ -78,9 +56,11 @@ class AuthService {
       surname,
       email,
     });
-
-    if (response.user) this.saveUser(response.user);
-
+    
+    if (response.user) {
+      sessionStorage.setItem('user', JSON.stringify(response.user));
+    }
+    
     return response;
   }
 
@@ -125,3 +105,4 @@ class AuthService {
 }
 
 export const authService = new AuthService();
+
