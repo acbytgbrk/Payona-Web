@@ -111,28 +111,84 @@
         max-width: 100%;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         margin: 0;
+        /* Varsayılan stilleri sıfırla */
+        background: none;
+        background-color: transparent;
+        color: inherit;
+        border: none;
     }
 
-    /* Outgoing (Gönderilen) - Her iki modda aynı */
+    /* Outgoing (Gönderilen) - Her iki modda aynı - Global CSS override */
+    /* main.css'teki .message-sent stilini tamamen override et */
+    .chat-wrapper .chat-card .chat-messages .message-wrapper.message-sent .message-bubble.outgoing,
+    .chat-card .chat-messages .message-wrapper.message-sent .message-bubble.outgoing,
+    .chat-messages .message-wrapper.message-sent .message-bubble.outgoing,
+    .message-wrapper.message-sent .message-bubble.outgoing,
     .message-bubble.outgoing {
-        background: #FF6B6B;
-        color: white;
+        background-color: #FF6B6B !important;
+        background: #FF6B6B !important;
+        background-image: none !important;
+        color: #FFFFFF !important;
         border-bottom-right-radius: 4px;
+        border: none !important;
+    }
+    
+    /* main.css'teki .message-sent class'ını override et (eğer doğrudan uygulanırsa) */
+    .chat-wrapper .chat-card .chat-messages .message-sent.message-bubble,
+    .chat-card .chat-messages .message-sent.message-bubble,
+    .chat-messages .message-sent.message-bubble {
+        background-color: #FF6B6B !important;
+        background: #FF6B6B !important;
+        background-image: none !important;
+        color: #FFFFFF !important;
     }
 
-    /* Incoming (Alınan) - Light Mode */
+    /* Incoming (Alınan) - Light Mode - Global CSS override */
+    /* main.css'teki .message-received stilini tamamen override et */
+    .chat-wrapper .chat-card .chat-messages .message-wrapper.message-received .message-bubble.incoming,
+    .chat-card .chat-messages .message-wrapper.message-received .message-bubble.incoming,
+    .chat-messages .message-wrapper.message-received .message-bubble.incoming,
+    .message-wrapper.message-received .message-bubble.incoming,
     .message-bubble.incoming {
-        background: #F1F1F1;
-        color: var(--text-main);
-        border: 1px solid var(--border-color);
+        background-color: #F1F1F1 !important;
+        background: #F1F1F1 !important;
+        background-image: none !important;
+        color: #2D3436 !important;
+        border: 1px solid var(--border-color) !important;
         border-bottom-left-radius: 4px;
     }
     
-    /* Incoming (Alınan) - Dark Mode */
+    /* main.css'teki .message-received class'ını override et (eğer doğrudan uygulanırsa) */
+    .chat-wrapper .chat-card .chat-messages .message-received.message-bubble,
+    .chat-card .chat-messages .message-received.message-bubble,
+    .chat-messages .message-received.message-bubble {
+        background-color: #F1F1F1 !important;
+        background: #F1F1F1 !important;
+        background-image: none !important;
+        color: #2D3436 !important;
+    }
+    
+    /* Incoming (Alınan) - Dark Mode - Global CSS override */
+    body.dark-theme .chat-wrapper .chat-card .chat-messages .message-wrapper.message-received .message-bubble.incoming,
+    body.dark-theme .chat-card .chat-messages .message-wrapper.message-received .message-bubble.incoming,
+    body.dark-theme .chat-messages .message-wrapper.message-received .message-bubble.incoming,
+    body.dark-theme .message-wrapper.message-received .message-bubble.incoming,
     body.dark-theme .message-bubble.incoming {
-        background: #1E1E1E;
-        color: var(--text-main);
-        border-color: #2c3e50;
+        background-color: #1E1E1E !important;
+        background: #1E1E1E !important;
+        background-image: none !important;
+        color: #ECF0F1 !important;
+        border-color: #2c3e50 !important;
+    }
+    
+    /* main.css'teki .message-received class'ını dark mode'da override et */
+    body.dark-theme .chat-wrapper .chat-card .chat-messages .message-received.message-bubble,
+    body.dark-theme .chat-card .chat-messages .message-received.message-bubble,
+    body.dark-theme .chat-messages .message-received.message-bubble {
+        background-color: #1E1E1E !important;
+        background: #1E1E1E !important;
+        background-image: none !important;
+        color: #ECF0F1 !important;
     }
 
     .message-time {
@@ -374,7 +430,13 @@
             try {
                 await chatService.sendMessage(otherUserId, content);
                 input.value = '';
-                await loadMessages(); 
+                // Mesajları yeniden yükle ve render et
+                await loadMessages();
+                // Scroll'u en alta kaydır
+                const messagesContainer = document.getElementById('chatMessages');
+                if (messagesContainer) {
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }
             } catch (error) {
                 alert('Mesaj gönderilemedi: ' + error.message);
             } finally {
