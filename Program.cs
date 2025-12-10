@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.IdentityModel.Tokens.Jwt; // ✅ Ekle
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Payona.API.Data;
 using Payona.API.Models;
@@ -10,16 +10,19 @@ using Payona.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ✅ Claim mapping'i kapat (EN BAŞA EKLE)
+// Claim mapping kapat
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
+// Controllers & Razor
 builder.Services.AddControllers();
 builder.Services.AddRazorPages();
-builder.Services.AddEndpointsApiExplorer();
+
+// Email settings
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddScoped<EmailService>();
 
-// ✅ Swagger'a JWT tanımı ekle
+// Swagger
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
@@ -66,7 +69,7 @@ builder.Services.AddScoped<MealRequestService>();
 builder.Services.AddScoped<MatchService>();
 builder.Services.AddScoped<MessageService>();
 
-// JWT Authentication
+// JWT Auth
 var jwtKey = builder.Configuration["Jwt:Key"]!;
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -90,25 +93,42 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAll", policy =>
     {
         policy.AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader();
+              .AllowAnyMethod()
+              .AllowAnyHeader();
     });
 });
 
 var app = builder.Build();
 
+
+// ======================
+//   AUTO MIGRATE (RENDER)
+// ======================
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();   // 🔥 Canlı DB’de tablo yoksa oluşturur
+}
+// ======================
+
+
+// Swagger — Render’da da açık kalsın (Frontend testleri için iyi olur)
+app.UseSwagger();
+app.UseSwaggerUI();
+
+// ⚠️ Render HTTPS redirect sevmez → sadece local'de çalıştırıyoruz
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseHttpsRedirection();
 }
 
-app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseCors("AllowAll");
+
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapRazorPages();
+
 app.MapControllers();
+app.MapRazorPages();
 
 app.Run();
