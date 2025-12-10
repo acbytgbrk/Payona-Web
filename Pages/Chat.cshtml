@@ -110,25 +110,26 @@
         word-wrap: break-word;
         max-width: 100%;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin: 0;
     }
 
-    /* Gönderilen Mesaj (Outgoing) - Her iki modda aynı */
-    .message-sent .message-bubble {
+    /* Outgoing (Gönderilen) - Her iki modda aynı */
+    .message-bubble.outgoing {
         background: #FF6B6B;
         color: white;
         border-bottom-right-radius: 4px;
     }
 
-    /* Alınan Mesaj (Incoming) - Light Mode */
-    .message-received .message-bubble {
+    /* Incoming (Alınan) - Light Mode */
+    .message-bubble.incoming {
         background: #F1F1F1;
         color: var(--text-main);
         border: 1px solid var(--border-color);
         border-bottom-left-radius: 4px;
     }
     
-    /* Alınan Mesaj (Incoming) - Dark Mode */
-    body.dark-theme .message-received .message-bubble {
+    /* Incoming (Alınan) - Dark Mode */
+    body.dark-theme .message-bubble.incoming {
         background: #1E1E1E;
         color: var(--text-main);
         border-color: #2c3e50;
@@ -339,10 +340,11 @@
             container.innerHTML = messages.map(msg => {
                 const isSent = msg.senderId === currentUser.id;
                 const timeStr = new Date(msg.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+                const bubbleClass = isSent ? 'outgoing' : 'incoming';
 
                 return `
                     <div class="message-wrapper ${isSent ? 'message-sent' : 'message-received'}">
-                        <div class="message-bubble">
+                        <div class="message-bubble ${bubbleClass}">
                             ${msg.content}
                         </div>
                         <div class="message-time">

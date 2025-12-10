@@ -113,6 +113,7 @@ public class FingerprintService
             {
                 var userCity = currentUser.DormInfo.City;
                 var userDorm = currentUser.DormInfo.Dorm;
+                var userGender = currentUser.DormInfo.Gender;
 
                 // Aynı şehir ve yurttaki talepleri filtrele
                 query = query.Where(f => 
@@ -121,6 +122,36 @@ public class FingerprintService
                     f.User.DormInfo.Dorm == userDorm &&
                     f.UserId != currentUserId.Value // Kendi taleplerini gösterme
                 );
+
+                // KYK yurt türü uyumluluğu kontrolü
+                // Eğer yurt adında "Kız ve Erkek" veya "Karışık" geçiyorsa, herkes görebilir
+                // Aksi halde cinsiyet uyumluluğu kontrol edilir
+                var isMixedDorm = userDorm.Contains("Kız Ve Erkek", StringComparison.OrdinalIgnoreCase) ||
+                                 userDorm.Contains("Kız ve Erkek", StringComparison.OrdinalIgnoreCase) ||
+                                 userDorm.Contains("Karışık", StringComparison.OrdinalIgnoreCase) ||
+                                 userDorm.Contains("Mixed", StringComparison.OrdinalIgnoreCase);
+
+                if (!isMixedDorm)
+                {
+                    // Karışık yurt değilse, cinsiyet uyumluluğu kontrol et
+                    // Erkek yurdu: sadece erkekler
+                    // Kız yurdu: sadece kızlar
+                    var isMaleDorm = userDorm.Contains("Erkek", StringComparison.OrdinalIgnoreCase) &&
+                                    !userDorm.Contains("Kız", StringComparison.OrdinalIgnoreCase);
+                    var isFemaleDorm = userDorm.Contains("Kız", StringComparison.OrdinalIgnoreCase) &&
+                                       !userDorm.Contains("Erkek", StringComparison.OrdinalIgnoreCase);
+
+                    if (isMaleDorm)
+                    {
+                        // Erkek yurdu: sadece erkek kullanıcıları göster
+                        query = query.Where(f => f.User.DormInfo.Gender == "Male" || f.User.DormInfo.Gender == "Erkek");
+                    }
+                    else if (isFemaleDorm)
+                    {
+                        // Kız yurdu: sadece kız kullanıcıları göster
+                        query = query.Where(f => f.User.DormInfo.Gender == "Female" || f.User.DormInfo.Gender == "Kadın");
+                    }
+                }
             }
             else
             {

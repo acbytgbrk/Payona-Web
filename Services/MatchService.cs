@@ -47,6 +47,33 @@ public class MatchService
         if (!fingerprintIsMine && !mealRequestIsMine)
             return null;
 
+        // ÖNEMLİ: Geçmiş eşleşmeler yeni eşleşmeyi engellemez
+        // Her yeni aktif talep bağımsız olarak eşleşebilir
+        // Sadece aynı fingerprint ve mealRequest kombinasyonu için zaten eşleşme varsa kontrol et
+        var existingMatch = await _context.Matches
+            .FirstOrDefaultAsync(m => 
+                m.FingerprintId == fingerprintId && 
+                m.MealRequestId == mealRequestId);
+
+        if (existingMatch != null)
+        {
+            // Bu spesifik kombinasyon zaten eşleşmiş, mevcut eşleşmeyi döndür
+            await _context.Entry(existingMatch).Reference(m => m.Giver).LoadAsync();
+            await _context.Entry(existingMatch).Reference(m => m.Receiver).LoadAsync();
+            
+            return new MatchDto
+            {
+                Id = existingMatch.Id,
+                GiverId = existingMatch.GiverId,
+                GiverName = existingMatch.Giver.Name + " " + existingMatch.Giver.Surname,
+                ReceiverId = existingMatch.ReceiverId,
+                ReceiverName = existingMatch.Receiver.Name + " " + existingMatch.Receiver.Surname,
+                MealType = existingMatch.MealType,
+                Status = existingMatch.Status,
+                MatchDate = existingMatch.MatchDate
+            };
+        }
+
         var match = new Match
         {
             FingerprintId = fingerprintId,
