@@ -107,16 +107,23 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();   // 🔥 Canlı DB’de tablo yoksa oluşturur
+    try
+    {
+        db.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Migration error: " + ex.Message);
+    }
 }
 // ======================
 
 
-// Swagger — Render’da da açık kalsın (Frontend testleri için iyi olur)
+// Swagger her ortamda açık (Render için gerekli)
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// ⚠️ Render HTTPS redirect sevmez → sadece local'de çalıştırıyoruz
+// Render HTTPS Redirect sevmez → yalnızca localde çalışsın
 if (app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
@@ -131,4 +138,13 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapRazorPages();
 
+
+// ======================
+//     RENDER PORT FIX
+// ======================
+var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
+app.Urls.Add($"http://0.0.0.0:{port}");
+
+
+// Uygulama başlat
 app.Run();
