@@ -35,10 +35,10 @@ public class MealRequestsController : ControllerBase
     }
 
     [HttpGet]
-    [AllowAnonymous]
     public async Task<IActionResult> GetAll([FromQuery] string? mealType = null)
     {
-        var result = await _mealRequestService.GetAllActiveAsync(mealType);
+        var userId = GetUserId();
+        var result = await _mealRequestService.GetAllActiveAsync(mealType, userId);
         return Ok(result);
     }
 

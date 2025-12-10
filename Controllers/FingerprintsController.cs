@@ -35,10 +35,10 @@ public class FingerprintsController : ControllerBase
     }
 
     [HttpGet]
-    [AllowAnonymous]
     public async Task<IActionResult> GetAll([FromQuery] string? mealType = null)
     {
-        var result = await _fingerprintService.GetAllActiveAsync(mealType);
+        var userId = GetUserId();
+        var result = await _fingerprintService.GetAllActiveAsync(mealType, userId);
         return Ok(result);
     }
 

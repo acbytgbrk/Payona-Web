@@ -95,12 +95,39 @@ public class FingerprintService
         };
     }
 
-    public async Task<List<FingerprintDto>> GetAllActiveAsync(string? mealType = null)
+    public async Task<List<FingerprintDto>> GetAllActiveAsync(string? mealType = null, Guid? currentUserId = null)
     {
         var query = _context.Fingerprints
             .Include(f => f.User)
                 .ThenInclude(u => u.DormInfo)
             .Where(f => f.Status == "active");
+
+        // Şehir ve yurt filtresi: Kullanıcı sadece aynı şehir ve yurttaki talepleri görebilir
+        if (currentUserId.HasValue)
+        {
+            var currentUser = await _context.Users
+                .Include(u => u.DormInfo)
+                .FirstOrDefaultAsync(u => u.Id == currentUserId.Value);
+
+            if (currentUser?.DormInfo != null)
+            {
+                var userCity = currentUser.DormInfo.City;
+                var userDorm = currentUser.DormInfo.Dorm;
+
+                // Aynı şehir ve yurttaki talepleri filtrele
+                query = query.Where(f => 
+                    f.User.DormInfo != null &&
+                    f.User.DormInfo.City == userCity &&
+                    f.User.DormInfo.Dorm == userDorm &&
+                    f.UserId != currentUserId.Value // Kendi taleplerini gösterme
+                );
+            }
+            else
+            {
+                // DormInfo yoksa hiçbir şey gösterme
+                query = query.Where(f => false);
+            }
+        }
 
         if (!string.IsNullOrEmpty(mealType))
         {
