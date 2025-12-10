@@ -353,17 +353,7 @@
 
     <script type="module">
         import { authService } from '/js/modules/auth.js';
-        // dormData.js içe aktarımı (varsa logic korunur)
-        // import { loadDormData, getCities, getDormsForCity } from '/js/modules/dormData.js';
-        
-        // Geçici statik veri fonksiyonları (Eğer import çalışmazsa diye)
-        const sampleData = {
-           "İstanbul": { "Male": ["Fatih Yurdu"], "Female": ["Kız Yurdu"] },
-           "Ankara": { "Male": ["Gölbaşı Yurdu"], "Female": ["Cebeci Yurdu"] }
-        };
-        const getCities = () => Object.keys(sampleData);
-        const getDormsForCity = (c, g) => (sampleData[c] && sampleData[c][g]) ? sampleData[c][g] : [];
-        const loadDormData = async () => sampleData;
+        import { loadDormData, getCities, getDormsForCity } from '/js/modules/dormData.js';
 
         // 1. GÜVENLİK
         if (!authService.isAuthenticated()) window.location.href = '/';
@@ -382,29 +372,37 @@
         const genderSelect = document.getElementById('profileGender');
 
         async function initDormData() {
-            dormData = await loadDormData();
-            const cities = getCities();
-            
-            cities.forEach(city => {
-                const option = document.createElement('option');
-                option.value = city;
-                option.textContent = city;
-                citySelect.appendChild(option);
-            });
+            try {
+                dormData = await loadDormData();
+                const cities = getCities();
+                
+                // Şehir select'ini temizle ve doldur
+                citySelect.innerHTML = '<option value="">Şehir Seçiniz</option>';
+                cities.forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city;
+                    option.textContent = city;
+                    citySelect.appendChild(option);
+                });
 
-            // Formları Doldur
-            document.getElementById('profileName').value = user.name || '';
-            document.getElementById('profileSurname').value = user.surname || '';
-            document.getElementById('profileEmail').value = user.email || '';
+                // Formları Doldur
+                document.getElementById('profileName').value = user.name || '';
+                document.getElementById('profileSurname').value = user.surname || '';
+                document.getElementById('profileEmail').value = user.email || '';
 
-            if (user.gender) genderSelect.value = user.gender;
-            if (user.city) {
-                citySelect.value = user.city;
-                updateDormOptions();
-            }
-            if (user.dorm) {
-                // DOM'un güncellenmesi için minik gecikme
-                setTimeout(() => dormSelect.value = user.dorm, 50);
+                if (user.gender) genderSelect.value = user.gender;
+                if (user.city) {
+                    citySelect.value = user.city;
+                    updateDormOptions();
+                }
+                if (user.dorm) {
+                    // DOM'un güncellenmesi için minik gecikme
+                    setTimeout(() => dormSelect.value = user.dorm, 50);
+                }
+            } catch (error) {
+                console.error('Error loading dorm data:', error);
+                document.getElementById('dormError').textContent = 'Yurt verileri yüklenirken hata oluştu.';
+                document.getElementById('dormError').style.display = 'block';
             }
         }
 
@@ -413,16 +411,29 @@
             const city = citySelect.value;
             dormSelect.innerHTML = '<option value="">Yurt Seçiniz</option>';
 
-            if (gender && city) {
+            if (gender && city && dormData) {
                 const dorms = getDormsForCity(city, gender);
                 if(dorms.length > 0) {
-                     dorms.forEach(dorm => {
+                    dormSelect.disabled = false;
+                    dormSelect.style.opacity = '1';
+                    dormSelect.style.cursor = 'pointer';
+                    dorms.forEach(dorm => {
                         const option = document.createElement('option');
                         option.value = dorm;
                         option.textContent = dorm;
                         dormSelect.appendChild(option);
                     });
+                } else {
+                    dormSelect.innerHTML = '<option value="">Bu kriterde yurt bulunamadı</option>';
+                    dormSelect.disabled = true;
+                    dormSelect.style.opacity = '0.6';
+                    dormSelect.style.cursor = 'not-allowed';
                 }
+            } else {
+                dormSelect.innerHTML = '<option value="">Önce şehir ve cinsiyet seçiniz</option>';
+                dormSelect.disabled = true;
+                dormSelect.style.opacity = '0.6';
+                dormSelect.style.cursor = 'not-allowed';
             }
         }
 

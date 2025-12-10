@@ -372,47 +372,83 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Bekleyin...';
 
             try {
-                // (Eski kodunun içerisindeki karmaşık eşleşme bulma mantığını buraya aynen taşıdım)
-                // Basitleştirilmiş hali:
                 let fId = null, mId = null;
 
                 // URL'den geldiyse
                 if (requestId && requestType) {
                     if (requestType === 'fingerprint') {
+                        // Benim fingerprint'im, karşı tarafın meal request'ini bul
                         fId = requestId;
-                        // Karşı tarafın uygun yemek isteğini bul...
                         const others = await mealRequestService.getAll();
                         const match = others.find(m => m.userId === otherUserId && m.status === 'active');
-                        if (match) mId = match.id;
-                    } else {
+                        if (match) {
+                            mId = match.id;
+                        } else {
+                            throw new Error('Karşı tarafta aktif yemek alma talebi bulunamadı.');
+                        }
+                    } else if (requestType === 'mealRequest') {
+                        // Benim meal request'im, karşı tarafın fingerprint'ini bul
                         mId = requestId;
                         const others = await fingerprintService.getAll();
                         const match = others.find(f => f.userId === otherUserId && f.status === 'active');
-                        if (match) fId = match.id;
+                        if (match) {
+                            fId = match.id;
+                        } else {
+                            throw new Error('Karşı tarafta aktif yemek verme talebi bulunamadı.');
+                        }
+                    }
+                } else {
+                    // URL yoksa otomatik bulmaya çalış
+                    // Benim aktif taleplerim
+                    const myActiveFPs = myFingerprints.filter(f => f.status === 'active');
+                    const myActiveMRs = myMealRequests.filter(m => m.status === 'active');
+                    
+                    // Karşı tarafın aktif talepleri
+                    const [othersFPs, othersMRs] = await Promise.all([
+                        fingerprintService.getAll(),
+                        mealRequestService.getAll()
+                    ]);
+                    
+                    const otherFPs = othersFPs.filter(f => f.userId === otherUserId && f.status === 'active');
+                    const otherMRs = othersMRs.filter(m => m.userId === otherUserId && m.status === 'active');
+                    
+                    // Eşleşme bul: Benim fingerprint'im + karşı tarafın meal request'i
+                    if (myActiveFPs.length > 0 && otherMRs.length > 0) {
+                        fId = myActiveFPs[0].id;
+                        mId = otherMRs[0].id;
+                    }
+                    // Veya benim meal request'im + karşı tarafın fingerprint'i
+                    else if (myActiveMRs.length > 0 && otherFPs.length > 0) {
+                        mId = myActiveMRs[0].id;
+                        fId = otherFPs[0].id;
+                    } else {
+                        throw new Error('Eşleşme için uygun aktif talepler bulunamadı.');
                     }
                 }
 
-                // URL yoksa otomatik bulmaya çalış
-                if (!fId && !mId) {
-                    // Otomatik oluşturma veya bulma mantığı (Eski koddan korundu)
-                    // ... (Burada backend çağrısı yapılacak)
-                    // Demo için basitçe matchService'i çağırıyoruz:
-                    // NOT: Gerçek projede buradaki detaylı mantık (Case 1, Case 2...) korunmalı.
-                    // Tasarım değişikliği olduğu için mantığa dokunmuyorum, eski kodun aynısı çalışır.
+                if (!fId || !mId) {
+                    throw new Error('Eşleşme için gerekli bilgiler eksik.');
                 }
 
-                // Şimdilik alert veriyoruz çünkü backend mantığı karmaşık
-                alert("Eşleşme mantığı çalıştırılıyor... (Konsolu kontrol et)");
-                
-                // Gerçek Match Çağrısı
-                // const result = await matchService.createMatch(fId, mId);
-                // if(result) alert("Başarılı!");
+                // Match oluştur
+                const result = await matchService.createMatch(fId, mId);
+                if (result) {
+                    alert('Eşleşme başarıyla oluşturuldu!');
+                    // Butonu güncelle
+                    btn.innerHTML = '<i class="fas fa-check"></i> Eşleşme Oluşturuldu';
+                    btn.style.background = 'var(--brand-secondary)';
+                    btn.disabled = true;
+                } else {
+                    throw new Error('Eşleşme oluşturulamadı.');
+                }
 
             } catch (error) {
                 alert('Hata: ' + error.message);
             } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalContent;
+                if (btn.innerHTML.includes('Bekleyin')) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                }
             }
         }
 

@@ -162,6 +162,20 @@
             font-weight: 600;
             cursor: pointer;
         }
+        
+        .unread-badge-nav {
+            display: inline-block;
+            background: var(--brand-primary);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            min-width: 18px;
+            text-align: center;
+            line-height: 1.2;
+            margin-left: 5px;
+        }
         .main-content {
             flex: 1;
             padding-top: 70px;
@@ -241,6 +255,10 @@
             // == GİRİŞ YAPMIŞ KULLANICI ==
             navbarLinks.innerHTML = `
                 <a href="/Dashboard" class="nav-link">Ana Sayfa</a>
+                <a href="/Messages" class="nav-link" id="messagesLink">
+                    <i class="far fa-comments"></i> Mesajlar
+                    <span id="unreadBadge" class="unread-badge-nav" style="display:none; margin-left:5px; background:var(--brand-primary); color:white; padding:2px 6px; border-radius:10px; font-size:0.7rem; font-weight:bold;">0</span>
+                </a>
                 <a href="/Profile" class="nav-link">Profil</a>
                 
                 <button class="theme-toggle" id="themeToggle" title="Modu Değiştir" style="margin-left:5px;">
@@ -249,6 +267,31 @@
                 
                 <button class="btn-logout" id="logoutBtn">Çıkış</button>
             `;
+            
+            // Unread count'u yükle ve güncelle
+            async function updateUnreadCount() {
+                try {
+                    const { chatService } = await import('/js/modules/chat.js');
+                    const count = await chatService.getUnreadCount();
+                    const badge = document.getElementById('unreadBadge');
+                    if (badge) {
+                        if (count > 0) {
+                            badge.textContent = count > 99 ? '99+' : count;
+                            badge.style.display = 'inline-block';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error updating unread count:', error);
+                }
+            }
+            
+            // İlk yükleme
+            updateUnreadCount();
+            
+            // Her 10 saniyede bir güncelle
+            setInterval(updateUnreadCount, 10000);
             
             document.getElementById('logoutBtn').addEventListener('click', async () => {
                 await authService.logout();

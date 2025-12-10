@@ -44,31 +44,34 @@
 
     /* Talep Listesi Kartları */
     .request-item {
-        background: var(--bg-input);
+        background: var(--bg-card);
         border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 1.2rem;
+        border-radius: 16px;
+        padding: 1.5rem;
         margin-bottom: 1rem;
         transition: all 0.3s ease;
         cursor: pointer;
         position: relative;
         overflow: hidden;
+        box-shadow: 0 2px 8px var(--shadow-color);
     }
 
     .request-item:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 5px 15px var(--shadow-color);
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px var(--shadow-color);
         border-color: var(--brand-primary);
     }
 
     /* Verme Talebi (Yeşil Çizgi) */
     .request-item[data-request-type="fingerprint"] {
         border-left: 5px solid #43e97b;
+        background: linear-gradient(to right, rgba(67, 233, 123, 0.05), var(--bg-card));
     }
     
     /* Alma Talebi (Mavi Çizgi) */
     .request-item[data-request-type="mealRequest"] {
         border-left: 5px solid #4facfe;
+        background: linear-gradient(to right, rgba(79, 172, 254, 0.05), var(--bg-card));
     }
 
     .request-header {
@@ -78,14 +81,26 @@
         margin-bottom: 0.5rem;
     }
 
-    .user-info { font-weight: 600; font-size: 1.1rem; color: var(--text-main); }
+    .user-info { 
+        font-weight: 600; 
+        font-size: 1.1rem; 
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .user-info i {
+        font-size: 1.3rem;
+        color: var(--brand-primary);
+    }
     .meal-badge {
-        padding: 4px 10px;
+        padding: 6px 12px;
         border-radius: 20px;
-        font-size: 0.8rem;
+        font-size: 0.85rem;
         font-weight: 600;
-        background: rgba(0,0,0,0.05);
-        color: var(--text-secondary);
+        background: linear-gradient(135deg, rgba(79, 172, 254, 0.1), rgba(67, 233, 123, 0.1));
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
     }
 
     /* Butonlar */
@@ -328,33 +343,43 @@
     // Veriyi gruplandırma (Haftalık/Aylık vb.)
     function aggregateData(dailyStats, period) {
         if (!dailyStats || dailyStats.length === 0) return [];
-        if (period === 'day' || period === 'week') return dailyStats;
+        if (period === 'day' || period === 'week') {
+            // Tarih formatını normalize et
+            return dailyStats.map(stat => ({
+                date: stat.date || stat.Date,
+                requestsCreated: stat.requestsCreated || stat.RequestsCreated || 0,
+                matchesCreated: stat.matchesCreated || stat.MatchesCreated || 0,
+                matchesAccepted: stat.matchesAccepted || stat.MatchesAccepted || 0
+            }));
+        }
 
         // Ay ve Yıl için gruplama mantığı
         const groupedData = {};
         dailyStats.forEach(stat => {
-            const date = new Date(stat.date);
+            const date = new Date(stat.date || stat.Date);
             let key;
             if (period === 'month') {
                 // Haftalara böl
                 const weekNum = Math.ceil(date.getDate() / 7);
-                key = `week-${weekNum}`;
+                key = `${date.getFullYear()}-${date.getMonth()}-week-${weekNum}`;
             } else if (period === 'year') {
                 // Aylara böl
-                key = `month-${date.getMonth()}`;
+                key = `${date.getFullYear()}-${date.getMonth()}`;
             }
 
             if (!groupedData[key]) {
                 groupedData[key] = {
-                    date: date, // Sıralama için
-                    requestsCreated: 0, matchesCreated: 0, matchesAccepted: 0
+                    date: date,
+                    requestsCreated: 0, 
+                    matchesCreated: 0, 
+                    matchesAccepted: 0
                 };
             }
-            groupedData[key].requestsCreated += stat.requestsCreated;
-            groupedData[key].matchesCreated += stat.matchesCreated;
-            groupedData[key].matchesAccepted += stat.matchesAccepted;
+            groupedData[key].requestsCreated += (stat.requestsCreated || stat.RequestsCreated || 0);
+            groupedData[key].matchesCreated += (stat.matchesCreated || stat.MatchesCreated || 0);
+            groupedData[key].matchesAccepted += (stat.matchesAccepted || stat.MatchesAccepted || 0);
         });
-        return Object.values(groupedData);
+        return Object.values(groupedData).sort((a, b) => a.date - b.date);
     }
 
     async function loadActivityStats(period) {
@@ -367,8 +392,10 @@
             document.getElementById('totalMatchesAccepted').textContent = stats.totalMatchesAccepted || 0;
             document.getElementById('totalMatchesCreated').textContent = stats.totalMatchesCreated || 0;
 
-            const processedData = aggregateData(stats.dailyStats, period);
-            drawChart(processedData); 
+            const processedData = aggregateData(stats.dailyStats || stats.DailyStats || [], period);
+            if (window.drawChart) {
+                drawChart(processedData);
+            }
 
         } catch (error) {
             console.error('Stats error:', error);
@@ -378,42 +405,80 @@
     // Basit Canvas Çizimi
     function initCanvas() {
         const canvas = document.getElementById('activityCanvas');
+        if (!canvas) return;
+        
         const ctx = canvas.getContext('2d');
         
         // Çözünürlük ayarı
-        canvas.width = canvas.parentElement.offsetWidth;
-        canvas.height = 250;
+        const resizeCanvas = () => {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = 250;
+            // Canvas yeniden boyutlandığında grafiği tekrar çiz
+            if (activityData) {
+                const processedData = aggregateData(activityData.dailyStats, currentPeriod);
+                drawChart(processedData);
+            }
+        };
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
 
         window.drawChart = function(data) {
+            if (!canvas || !ctx) return;
+            
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             if (!data || data.length === 0) {
                 ctx.fillStyle = '#aaa';
+                ctx.font = '14px Poppins';
                 ctx.textAlign = 'center';
                 ctx.fillText('Veri Yok', canvas.width/2, canvas.height/2);
                 return;
             }
 
-            const padding = 30;
+            const padding = 40;
             const width = canvas.width - padding*2;
             const height = canvas.height - padding*2;
-            const maxVal = Math.max(...data.map(d => d.requestsCreated + d.matchesAccepted + 5));
-            const stepX = width / data.length;
+            const maxVal = Math.max(...data.map(d => Math.max(d.requestsCreated || 0, d.matchesAccepted || 0, d.matchesCreated || 0)), 1);
+            const stepX = data.length > 1 ? width / (data.length - 1) : width;
+
+            // Grid çizgileri
+            ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (height / 5) * i;
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(padding + width, y);
+                ctx.stroke();
+            }
 
             // Çubukları çiz
             data.forEach((d, i) => {
-                const x = padding + i * stepX + 10;
-                const barW = stepX - 20;
+                const x = padding + i * stepX;
+                const barW = Math.max(stepX * 0.6, 20);
                 
                 // Mavi (Talep)
-                const h1 = (d.requestsCreated / maxVal) * height;
+                const h1 = maxVal > 0 ? (d.requestsCreated || 0) / maxVal * height : 0;
                 ctx.fillStyle = '#4facfe';
-                ctx.fillRect(x, height + padding - h1, barW, h1);
+                ctx.fillRect(x - barW/2, padding + height - h1, barW, h1);
                 
-                // Yeşil (Eşleşme)
-                const h2 = (d.matchesAccepted / maxVal) * height;
+                // Yeşil (Eşleşme - Accepted)
+                const h2 = maxVal > 0 ? (d.matchesAccepted || 0) / maxVal * height : 0;
                 ctx.fillStyle = '#43e97b';
-                // Eşleşme çubuğunu talebin yanına veya üstüne çizebiliriz, burada üstüne bindirelim (basitlik için)
-                ctx.fillRect(x, height + padding - h1 - h2, barW, h2);
+                ctx.fillRect(x - barW/2, padding + height - h1 - h2, barW, h2);
+                
+                // Tarih etiketleri
+                if (i % Math.ceil(data.length / 7) === 0 || i === data.length - 1) {
+                    const date = new Date(d.date || d.Date);
+                    const dateStr = currentPeriod === 'day' 
+                        ? date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })
+                        : date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+                    ctx.fillStyle = '#636E72';
+                    ctx.font = '10px Poppins';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(dateStr, x, canvas.height - 10);
+                }
             });
         }
     }
@@ -463,10 +528,15 @@
             const label = isGive ? 'Verme İsteği' : 'Alma İsteği';
             const icon = isGive ? 'ri-hand-heart-line' : 'ri-restaurant-line';
             const statusColor = item.status === 'active' ? '#43e97b' : '#aaa';
+            const displayName = isOwn ? (user.name || 'Ben') : (item.userName || item.user?.name || 'Kullanıcı');
 
             // Tarih formatla
             const dateStr = item.preferredDate || item.availableDate 
-                ? new Date(item.preferredDate || item.availableDate).toLocaleDateString('tr-TR') 
+                ? new Date(item.preferredDate || item.availableDate).toLocaleDateString('tr-TR', { 
+                    day: 'numeric', 
+                    month: 'short',
+                    year: 'numeric'
+                }) 
                 : 'Tarih Belirtilmemiş';
 
             return `
@@ -474,28 +544,45 @@
                  data-request-id="${item.id}"
                  data-request-type="${item.type}"
                  data-user-id="${item.userId}"
-                 data-user-name="${item.userName || ''}">
+                 data-user-name="${item.userName || item.user?.name || ''}">
                 
                 <div class="request-header">
                     <span class="user-info">
-                        <i class="${icon}"></i> ${item.userName || 'Bilinmeyen'}
+                        <i class="${icon}"></i> ${displayName}
+                        ${isOwn ? '<span style="font-size:0.75rem; color:var(--text-secondary); margin-left:5px;">(Benim Talebim)</span>' : ''}
                     </span>
                     <span class="meal-badge">${dateStr}</span>
                 </div>
                 
-                <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom: 0.5rem;">
-                    <strong>${item.mealType === 'lunch' ? 'Öğle Yemeği' : 'Akşam Yemeği'}</strong>
-                    ${item.notes || item.description ? ' - ' + (item.notes || item.description) : ''}
-                </p>
+                <div style="margin: 0.8rem 0;">
+                    <p style="color:var(--text-secondary); font-size:0.95rem; margin-bottom: 0.5rem; line-height:1.5;">
+                        <i class="ri-restaurant-line" style="color:var(--brand-secondary); margin-right:5px;"></i>
+                        <strong style="color:var(--text-main);">${item.mealType === 'lunch' ? 'Öğle Yemeği' : 'Akşam Yemeği'}</strong>
+                    </p>
+                    ${item.notes || item.description ? `
+                        <p style="color:var(--text-secondary); font-size:0.9rem; margin-top:0.5rem; padding:0.8rem; background:var(--bg-input); border-radius:8px; border-left:3px solid var(--brand-secondary);">
+                            ${item.notes || item.description}
+                        </p>
+                    ` : ''}
+                </div>
 
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:0.8rem; color:var(--text-placeholder);">
-                        Durum: <span style="color:${statusColor}; font-weight:bold;">${item.status}</span>
-                    </span>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border-color);">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-size:0.8rem; color:var(--text-placeholder);">
+                            Durum:
+                        </span>
+                        <span style="color:${statusColor}; font-weight:bold; font-size:0.85rem; padding:4px 10px; background:${statusColor === '#43e97b' ? 'rgba(67, 233, 123, 0.1)' : 'rgba(170, 170, 170, 0.1)'}; border-radius:12px;">
+                            ${item.status === 'active' ? 'Aktif' : item.status === 'matched' ? 'Eşleşti' : item.status}
+                        </span>
+                    </div>
                     
                     ${isOwn 
-                        ? `<button class="btn-delete" style="color:#ff6b6b; background:none; border:none; cursor:pointer;" onclick="event.stopPropagation()">Sil <i class="ri-delete-bin-line"></i></button>` 
-                        : `<i class="ri-message-3-line" style="color:var(--brand-primary); font-size:1.2rem;"></i>`
+                        ? `<button class="btn-delete" style="color:#ff6b6b; background:rgba(255,107,107,0.1); border:1px solid rgba(255,107,107,0.3); cursor:pointer; padding:6px 12px; border-radius:8px; transition:all 0.2s; font-size:0.85rem; font-weight:600; display:flex; align-items:center; gap:5px;" onmouseover="this.style.background='rgba(255,107,107,0.2)'" onmouseout="this.style.background='rgba(255,107,107,0.1)'">
+                            <i class="ri-delete-bin-line"></i> Sil
+                           </button>` 
+                        : `<div style="display:flex; align-items:center; gap:8px; color:var(--brand-primary); font-weight:600; font-size:0.9rem;">
+                            <i class="ri-message-3-line"></i> Mesajlaş
+                           </div>`
                     }
                 </div>
             </div>`;
@@ -567,24 +654,34 @@
     // === 7. KARTA TIKLAMA (SOHBETE GİT) ===
     document.addEventListener('click', async (e) => {
         // Silme butonu kontrolü
-        if (e.target.closest('.btn-delete')) {
+        if (e.target.closest('.btn-delete') || e.target.classList.contains('btn-delete')) {
+            e.preventDefault();
+            e.stopPropagation();
             const card = e.target.closest('.request-item');
+            if (!card) return;
+            
             const id = card.dataset.requestId;
             const type = card.dataset.requestType;
             
             if (confirm('Silmek istediğine emin misin?')) {
                 try {
-                    if (type === 'fingerprint') await fingerprintService.delete(id);
-                    else await mealRequestService.delete(id);
+                    if (type === 'fingerprint') {
+                        await fingerprintService.delete(id);
+                    } else {
+                        await mealRequestService.delete(id);
+                    }
                     loadRequests(); // Listeyi yenile
-                } catch(err) { alert('Silinemedi'); }
+                    loadActivityStats(currentPeriod); // Grafiği yenile
+                } catch(err) { 
+                    alert('Silinemedi: ' + (err.message || 'Bilinmeyen hata'));
+                }
             }
             return;
         }
 
         // Karta tıklama kontrolü (Sohbet)
         const card = e.target.closest('.request-item');
-        if (card) {
+        if (card && !e.target.closest('.btn-delete')) {
             const userId = card.dataset.userId;
             const userName = card.dataset.userName;
             const reqId = card.dataset.requestId;
@@ -592,7 +689,7 @@
 
             // Kendi kartımız değilse sohbete git
             if (userId != user.id) {
-                window.location.href = `/Chat?userId=${userId}&userName=${userName}&requestId=${reqId}&requestType=${reqType}`;
+                window.location.href = `/Chat?userId=${encodeURIComponent(userId)}&userName=${encodeURIComponent(userName || 'Kullanıcı')}&requestId=${encodeURIComponent(reqId)}&requestType=${encodeURIComponent(reqType)}`;
             }
         }
     });
