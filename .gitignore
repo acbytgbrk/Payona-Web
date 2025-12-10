@@ -1,0 +1,11 @@
+bin/
+obj/
+*.pdb
+*.dll
+*.cache
+*.db
+*.log
+*.runtimeconfig.json
+*.deps.json
+*.env
+
